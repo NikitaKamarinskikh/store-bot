@@ -4,6 +4,11 @@ from web.products.models import Products
 from web.certificates.models import Certificates
 
 
+"""
+TODO:
+    - Добавить статус для заказа
+"""
+
 class Orders(models.Model):
     client = models.ForeignKey(Clients, verbose_name='Клиент', on_delete=models.CASCADE)
     product = models.ForeignKey(Products, verbose_name='Товар', on_delete=models.CASCADE)
