@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'web.products',
     'web.orders',
     'web.certificates',
+    'web.transport_companies',
 ]
 
 MIDDLEWARE = [
