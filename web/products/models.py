@@ -39,3 +39,12 @@ class Products(models.Model):
         verbose_name_plural = 'Товары'
 
 
+class ProductImages(models.Model):
+    product = models.ForeignKey(Products, verbose_name='Товар', on_delete=models.CASCADE)
+    photo = models.CharField(verbose_name='ID файла', max_length=255)
+
+    class Meta:
+        verbose_name = 'Фото товара'
+        verbose_name_plural = 'Фото товаров'
+
+
