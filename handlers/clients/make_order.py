@@ -33,23 +33,12 @@ async def get_product_quantity(message: types.Message, state: FSMContext):
     product_quantity = message.text
     if _is_correct_product_quantity(product_quantity):
         await state.update_data(product_quantity=int(product_quantity))
-        await message.answer('Укажите фио')
-        await MakeOrderStates.get_full_name.set()       
-    else:
-        await message.answer('Количество товара должно быть указано числом больше 0')
-
-
-@dp.message_handler(state=MakeOrderStates.get_full_name)
-async def get_fullname(message: types.Message, state: FSMContext):
-    full_name = message.text
-    if _is_correct_full_name(full_name):
-        await state.update_data(full_name=full_name)
         await message.answer('Укажите ожидаемую дату готовности')
         # TODO:
         # - add calendar
         await MakeOrderStates.get_desired_completion_date.set()
     else:
-        await message.answer('ФИО указано неверно')
+        await message.answer('Количество товара должно быть указано числом больше 0')
 
 
 @dp.message_handler(state=MakeOrderStates.get_desired_completion_date)
@@ -68,13 +57,6 @@ async def get_last_completion_date(message: types.Message, state: FSMContext):
     print(order_data)
     await message.answer('Заказ успешно создан. Ожидайте ответа от менеджера')
     await state.finish()
-
-
-
-
-def _is_correct_full_name(full_name: str) -> bool:
-    # ^[а-яА-ЯёЁ]{2,30} [а-яА-ЯёЁ]{2,30} [а-яА-ЯёЁ]{2,30}$ - three Cyrillic words separated by a space 
-    return match('^[а-яА-ЯёЁ]{2,30} [а-яА-ЯёЁ]{2,30} [а-яА-ЯёЁ]{2,30}$', full_name) is not None
 
 
 def _is_correct_product_quantity(quantity: str) -> bool:

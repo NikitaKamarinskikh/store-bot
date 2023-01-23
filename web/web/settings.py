@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'web.orders',
     'web.certificates',
     'web.transport_companies',
+    'web.bot_admins'
 ]
 
 MIDDLEWARE = [
