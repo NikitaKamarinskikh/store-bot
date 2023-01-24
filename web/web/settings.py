@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'web.transport_companies',
     'web.bot_admins',
     'web.mailing',
+    'web.basket',
 ]
 
 MIDDLEWARE = [
