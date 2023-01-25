@@ -2,12 +2,8 @@ from django.db import models
 from web.clients.models import Clients
 from web.products.models import Products
 from web.certificates.models import Certificates
+from config import OrderStatuses
 
-
-"""
-TODO:
-    - Добавить статус для заказа
-"""
 
 class Orders(models.Model):
     client = models.ForeignKey(Clients, verbose_name='Клиент', on_delete=models.CASCADE)
@@ -17,7 +13,7 @@ class Orders(models.Model):
     created_at = models.DateField(verbose_name='Дата заказа', auto_now_add=True)
     desired_completion_date = models.DateField(verbose_name='Желаемая дата выполнения')
     last_completion_date = models.DateField(verbose_name='Последняя дата выполнения')
-    certificate = models.ForeignKey(Certificates, verbose_name='Сертификат', on_delete=models.SET_NULL, null=True, blank=True)
+    status = models.CharField(verbose_name='Статус', max_length=100, choices=OrderStatuses.choices())
 
     def __str__(self) -> str:
         return f"{self.client} | {self.product} | {self.product_quantity}"
