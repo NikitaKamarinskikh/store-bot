@@ -8,6 +8,7 @@ class OrdersAdmin(admin.ModelAdmin):
                     'desired_completion_date', 'last_completion_date', 'status')
     list_display_links  = ('client', 'product')
     readonly_fields = ('created_at',)
+    list_filter = ('status',)
 
     class Meta:
         model = Orders

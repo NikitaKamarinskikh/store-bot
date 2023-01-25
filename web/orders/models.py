@@ -13,7 +13,7 @@ class Orders(models.Model):
     created_at = models.DateField(verbose_name='Дата заказа', auto_now_add=True)
     desired_completion_date = models.DateField(verbose_name='Желаемая дата выполнения')
     last_completion_date = models.DateField(verbose_name='Последняя дата выполнения')
-    status = models.CharField(verbose_name='Статус', max_length=100, choices=OrderStatuses.choices())
+    status = models.CharField(verbose_name='Статус', max_length=100, choices=OrderStatuses.choices(), default=OrderStatuses.PENDING_PROCESSING.name)
 
     def __str__(self) -> str:
         return f"{self.client} | {self.product} | {self.product_quantity}"

@@ -1,5 +1,5 @@
 import json
-from config import ReferralProgramSettings, REFERRAL_PROGRAM_SETTINGS_FILE_NAME
+from .config import REFERRAL_PROGRAM_SETTINGS_FILE_NAME, ReferralProgramSettings
 
 
 def load_referral_program_settings_from_json_file() -> ReferralProgramSettings:
@@ -22,13 +22,4 @@ def save_referral_program_setting_to_json_file(settings: ReferralProgramSettings
         json.dump(settings.as_dict(), settings_file)
 
 
-if __name__ == '__main__':
-    settings = load_referral_program_settings_from_json_file()
-    settings.make_order_reward = 100
-    settings.referral_order_reward_status = False
-    settings.referral_order_reward = 100
-    settings.referral_reward= 33
-    save_referral_program_setting_to_json_file(settings)
 
-
-datadata

@@ -4,31 +4,74 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <script src="https://kit.fontawesome.com/f18df10100.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
     <title>Настройки реферальной программы</title>
 </head>
+
 <body>
-    <p>Вознаграждение за привлечение пользователя.</p>
+    <div class="container">
+        
+        <div class="form-wrapper col-6">
+            <form action="{% url 'update-referral-program-settings'%}" method="POST">
+                <label for="user_acquisition_reward">Вознаграждение за привлечение пользователя</label>
+                <input type="number" min="1" value="{{ settings.user_acquisition_reward }}" class="form-control" name="user_acquisition_reward">
 
-    <p>Вознаграждение привлеченному пользователю.</p>
-
-
-    <p>Вознаграждение в % за заказ привлеченным пользователем.</p>
-
-
-    <p>Вознаграждение себе в % за свой заказ</p>
-
-
-    <p>Возможность включать/отключать вознаграждение, за
-    приглашение, пока преферал не сделал заказ.</p>
+                <label for="referral_reward">Вознаграждение привлеченному пользователю</label>
+                <input type="number" min="1" value="{{ settings.referral_reward }}" class="form-control" name="referral_reward">                
 
 
-    <p>Возможность включать/отключать вознаграждение за
-    собственный заказ.</p>
+                <label for="referral_order_reward">Вознаграждение в % за заказ привлеченным пользователем</label>
+                <input type="number" min="1" value="{{ settings.referral_order_reward }}" class="form-control" name="referral_order_reward">                
 
 
-    <p>Возможность включать/отключать вознаграждение за заказ
-    рефералов.</p>
+                <label for="make_order_reward">Вознаграждение себе в % за свой заказ</label>
+                <input type="number" min="1" value="{{ settings.make_order_reward }}" class="form-control" name="make_order_reward">                
 
+                <div class="">
+                    
+                    {% if settings.user_acquisition_reward_satus %}
+                        <input class="form-check-input" type="checkbox" name="user_acquisition_reward_satus" checked>
+                    {% else %}
+                        <input class="form-check-input" type="checkbox" name="user_acquisition_reward_satus">
+                    {% endif %}
+                    <label class="form-check-label" for="user_acquisition_reward_satus">Вознаграждение, за приглашение, пока преферал не сделал заказ</label>
+                </div>
+            
+                <div class="">
+                    {% if settings.make_order_reward_status %}
+                        <input class="form-check-input" type="checkbox" name="make_order_reward_status" checked>
+                    {% else %}
+                        <input class="form-check-input" type="checkbox" name="make_order_reward_status">
+                    {% endif %}
+                    <label class="form-check-label" for="make_order_reward_status">Вознаграждение за собственный заказ</label>
+                </div>
+
+                <div class="">
+                    {% if settings.referral_order_reward_status %}
+                        <input class="form-check-input" type="checkbox" name="referral_order_reward_status" checked>
+                    {% else %}
+                        <input class="form-check-input" type="checkbox" name="referral_order_reward_status">
+                    {% endif %}
+                    <label class="form-check-label" for="referral_order_reward_status">вознаграждение за заказ рефералов.</label>
+                </div>
+    
+                <button class="btn btn-primary mt-2" type="submit">
+                    Сохранить
+                </button>
+                {% csrf_token %}
+            </form>
+        </div>
+
+    </div>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
 </body>
 </html>
