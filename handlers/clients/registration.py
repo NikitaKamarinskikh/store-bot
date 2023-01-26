@@ -1,81 +1,57 @@
-from re import match
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.builtin import CommandStart
 from main import dp
-from keyboards.default.get_contact import get_phone_markup
+from config import PRIVACY_POLICY_FILE_TELEGRAM_ID
+from keyboards.default.one_button_markup import one_button_markup
+from keyboards.default.main_markup import main_markup
 from states.clients.registration import ClientRegistrationStates
-from db_api import transport_companies
-from keyboards.inline.transport_companies import transport_companies_markup, transport_companies_callback
+from messages_texts import RegistrationMessagesTexts
+from db_api import clients
 
 
-@dp.message_handler(text='test_registration')
-async def start_registration(message: types.Message):
-    await ClientRegistrationStates.get_full_name.set()  
-    await message.answer('Укажите фио')   
-
-
-@dp.message_handler(state=ClientRegistrationStates.get_full_name)
-async def get_full_name(message: types.Message, state: FSMContext):
-    full_name = message.text
-    if _is_correct_full_name(full_name):
-        await state.update_data(full_name=full_name)
-        await ClientRegistrationStates.get_phone_number.set()
+@dp.message_handler(CommandStart())
+async def start(message: types.Message):
+    client = clients.get_by_telegram_id_or_none(message.from_user.id)
+    if client is None:
         await message.answer(
-            'Отправьте ваш номер телефона сообщением, либо воспользуйтесь прикрепленной кнопкой',
-            reply_markup=get_phone_markup
+            'Здравствуйте. Добро пожаловать. Здесь вы можете приобрести экипировку производства "Bear Gear"',
+            reply_markup=one_button_markup(RegistrationMessagesTexts.accept_welcome_message)
         )
+        await ClientRegistrationStates.accept_welcome_message.set()
     else:
-        await message.answer('ФИО указано неверно')
+        await message.answer('Вы уже зарегистрированы в боте')
 
 
-@dp.message_handler(content_types=types.ContentTypes.CONTACT, state=ClientRegistrationStates.get_phone_number)
-async def get_phone_number_by_button(message: types.Message, state: FSMContext):
-    phone_number = message.contact.phone_number
-    await state.update_data(phone_number=phone_number)
-    await _ask_delivery_address(message)
-
-
-@dp.message_handler(state=ClientRegistrationStates.get_phone_number)
-async def get_phone_number_by_message(message: types.Message, state: FSMContext):
-    phone_number = message.text
-    if phone_number.isdigit():
-        await state.update_data(phone_number=phone_number)
-        await _ask_delivery_address(message)
-    else:
-        await message.answer('Номер телефона может содержать только цифры')
-
-
-@dp.message_handler(state=ClientRegistrationStates.get_address)
-async def get_address(message: types.Message, state: FSMContext):
-    address = message.text
-    await state.update_data(address=address)
-    await ClientRegistrationStates.get_transport_company.set()
-    transport_companies_list = transport_companies.get_all()
+@dp.message_handler(text=RegistrationMessagesTexts.accept_welcome_message,
+                    state=ClientRegistrationStates.accept_welcome_message)
+async def accept_welcome_message(message: types.Message):
     await message.answer(
-        'Укажите транспортную компанию',
-        reply_markup=transport_companies_markup(transport_companies_list)
+        'Чтобы сделать заказ нужно согласиться с правилами бота, в том числе касаемо ваших персональных данных.',
+        reply_markup=one_button_markup(RegistrationMessagesTexts.accept_privacy_policy_message)
     )
+    await message.answer_document(PRIVACY_POLICY_FILE_TELEGRAM_ID)
+    await ClientRegistrationStates.accept_privacy_policy.set()
 
 
-@dp.callback_query_handler(transport_companies_callback.filter(), state=ClientRegistrationStates.get_transport_company)
-async def get_transport_company(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
-    await callback.answer()
-    transport_company_id = callback_data.get('id')
-    print(transport_company_id)
+@dp.message_handler(text=RegistrationMessagesTexts.accept_privacy_policy_message,
+                    state=ClientRegistrationStates.accept_privacy_policy)
+async def accept_privacy_policy(message: types.Message, state: FSMContext):
+    clients.create(message.from_user.id, message.from_user.username)
+    await message.answer(
+        """Главное меню:
+1. Заказ - для выбора из каталога, оформления нестандартного заказа, а так же оптового заказа.
+2. Поиск - поиск по каталогу. Нажмите кнопку и начните вводить то что ищите.
+3. Кошелек - ваши бонусные монеты, за заказы и приглашения, которые можете потратить на
+4. Общая информация""",
+    reply_markup=main_markup
+    )
     await state.finish()
-    await callback.message.answer('Регистрация прошла успешно')
 
 
-async def _ask_delivery_address(message: types.Message) -> None:
-    await ClientRegistrationStates.get_address.set()
-    await message.answer(
-        'Укажите адресс доставки',
-        reply_markup=types.ReplyKeyboardRemove()
-    )
 
 
-def _is_correct_full_name(full_name: str) -> bool:
-    # ^[а-яА-ЯёЁ]{2,30} [а-яА-ЯёЁ]{2,30} [а-яА-ЯёЁ]{2,30}$ - three Cyrillic words separated by a space 
-    return match('^[а-яА-ЯёЁ]{2,30} [а-яА-ЯёЁ]{2,30} [а-яА-ЯёЁ]{2,30}$', full_name) is not None
+
+
 
 
