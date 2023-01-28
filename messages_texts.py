@@ -13,3 +13,10 @@ class RegistrationMessagesTexts(NamedTuple):
     accept_privacy_policy_message = 'Принять'
 
 
+class OrdersMessagesText(NamedTuple):
+    catalog = 'Каталог'
+    product_not_in_catalog = 'Нет в каталоге'
+    wholesale_order = 'Оптовый заказ'
+    back = 'Назад'
+    backet = 'Корзина'
+

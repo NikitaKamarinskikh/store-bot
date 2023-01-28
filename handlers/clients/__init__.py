@@ -1,5 +1,5 @@
 from .registration import dp
-from .make_order import dp
+from .orders import dp
 from .store_info import dp
 from .catalog import dp
 from .bonuses  import dp
