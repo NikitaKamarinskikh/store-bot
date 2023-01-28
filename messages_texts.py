@@ -19,4 +19,3 @@ class OrdersMessagesText(NamedTuple):
     wholesale_order = 'Оптовый заказ'
     back = 'Назад'
     backet = 'Корзина'
-

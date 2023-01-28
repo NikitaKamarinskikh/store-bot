@@ -14,6 +14,7 @@ class Categories(models.Model):
 
 class Subcategories(models.Model):
     name = models.CharField(verbose_name='Название', max_length=60)
+    category =  models.ForeignKey(Categories, verbose_name='Категория', on_delete=models.CASCADE)
 
     def __str__(self) -> str:
         return self.name
@@ -23,6 +24,19 @@ class Subcategories(models.Model):
         verbose_name_plural = 'Пдокатегории'
 
 
+
+class AdditionalProducts(models.Model):
+    name = models.CharField(verbose_name='Название', max_length=255)
+    price = models.PositiveIntegerField(verbose_name='Стоимость')
+
+    def __str__(self) -> str:
+        return self.name
+
+    class Meta:
+        verbose_name = 'Дополнительный товар'
+        verbose_name_plural= 'Дополнительные товары'
+
+
 class Products(models.Model):
     name = models.CharField(verbose_name='Название', max_length=255)
     category = models.ForeignKey(Categories, verbose_name='Категория', on_delete=models.CASCADE)
@@ -30,6 +44,7 @@ class Products(models.Model):
     description = models.TextField(verbose_name='Описание')
     sizes = models.CharField(verbose_name='Размеры', max_length=60)
     price = models.IntegerField(verbose_name='Цена')
+    additional_products = models.ManyToManyField(AdditionalProducts, verbose_name='Дополнительные опции')
 
     def __str__(self) -> str:
         return self.name

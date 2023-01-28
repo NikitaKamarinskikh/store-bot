@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Products, ProductImages, Categories, Subcategories
+from .models import Products, ProductImages, Categories, Subcategories, AdditionalProducts
 
 
 @admin.register(ProductImages)
@@ -36,4 +36,12 @@ class SubcategoriesAdmin(admin.ModelAdmin):
 
     class Meta:
         model = Subcategories
+
+
+@admin.register(AdditionalProducts)
+class AdditionalProductsAdmin(admin.ModelAdmin):
+
+    class Meta:
+        model = AdditionalProducts
+
 
