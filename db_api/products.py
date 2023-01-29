@@ -36,3 +36,5 @@ def get_product_images_by_product_id(product_id: int) -> List[ProductImages]:
     product = Products.objects.get(pk=product_id)
     return ProductImages.objects.filter(product=product)
 
+
+

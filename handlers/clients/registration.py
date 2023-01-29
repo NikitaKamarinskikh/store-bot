@@ -10,9 +10,9 @@ from messages_texts import RegistrationMessagesTexts
 from db_api import clients
 
 
-from typing import List
+from typing import List, Tuple
 from web.products.models import ProductImages
-from db_api import products as products_model
+from db_api import products as products_model, basket
 from keyboards.inline import product_markups
 from states.clients.make_order import GetProductFromCatalogStates
 from main import bot
@@ -37,9 +37,11 @@ async def start(message: types.Message, state: FSMContext):
 async def _test(message: types.Message, state: FSMContext):
     products = products_model.get_all_products()
     products_ids_list = [product.pk for product in products]
-    await state.update_data(products_ids_list=products_ids_list)
-    markup = product_markups.chose_product_markup(products[0].pk, 0, len(products))
+    await state.update_data(products_ids_list=products_ids_list, additional_products_list=[])
+    
     product = products[0]
+    markup = product_markups.chose_product_markup(product.pk, 0, product.additional_products.all(),len(products))
+
     product_images = products_model.get_product_images_by_product_id(product.pk)
     if product_images:
         album = _collect_image_files_to_media_group(product_images)
@@ -64,7 +66,7 @@ async def next_product(callback: types.CallbackQuery, callback_data: dict, state
     next_product_id = products_ids_list[index]
     product = products_model.get_product_by_id(next_product_id)
 
-    markup = product_markups.chose_product_markup(next_product_id, index, len(products_ids_list))
+    markup = product_markups.chose_product_markup(next_product_id, index, product.additional_products.all(), len(products_ids_list))
     product_images = products_model.get_product_images_by_product_id(product.pk)
     if images_id:
         for image_id in images_id:
@@ -94,6 +96,40 @@ async def next_product(callback: types.CallbackQuery, callback_data: dict, state
             text=f'{product.name}\n{product.description}',
             reply_markup=markup
         )
+
+
+@dp.callback_query_handler(product_markups.additional_product_callback.filter(), state=GetProductFromCatalogStates.chose_product)
+async def add_additional_product(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    await callback.answer()
+    state_data = await state.get_data()
+    id = callback_data.get('id')
+    product_id = callback_data.get('product_id')
+    additional_products_list = state_data.get('additional_products_list')
+    additional_products_list.append(
+        (int(product_id), int(id))
+    )
+    await state.update_data(additional_products_list=additional_products_list)
+
+
+
+@dp.callback_query_handler(product_markups.add_product_to_basket_callback.filter(), state=GetProductFromCatalogStates.chose_product)
+async def add_product_to_basket(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    await callback.answer()
+    product_id = callback_data.get('product_id')
+
+    state_data = await state.get_data()
+    additional_products_list = state_data.get('additional_products_list')
+    additional_products_ids = _get_additional_products_ids_from_chosen_additional_products(additional_products_list, int(product_id))
+
+    basket.add(callback.from_user.id, product_id, additional_products_ids)
+
+
+def _get_additional_products_ids_from_chosen_additional_products(additional_products: List[Tuple[int, int]], product_id: int) -> List[int]:
+    additional_products_ids = list()
+    for item in additional_products:
+        if item[0] == product_id:
+            additional_products_ids.append(item[1])
+    return additional_products_ids
 
 
 def _collect_image_files_to_media_group(product_images: List[ProductImages]) -> types.MediaGroup():
