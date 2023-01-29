@@ -4,7 +4,7 @@ from main import dp
 from messages_texts import OrdersMessagesText
 from keyboards.inline.product_markups import categories_markup, categories_callback,\
     subcategories_markup, subcategories_callback
-from states.clients.make_order import GetProductFromCatalog
+from states.clients.make_order import GetProductFromCatalogStates
 from db_api import products as products_model
 
 
@@ -15,10 +15,10 @@ async def catalog(message: types.Message):
         'Выберите категорию',
         reply_markup=categories_markup(categories)
     )
-    await GetProductFromCatalog.get_category.set()
+    await GetProductFromCatalogStates.get_category.set()
 
 
-@dp.callback_query_handler(categories_callback.filter(), state=GetProductFromCatalog.get_category)
+@dp.callback_query_handler(categories_callback.filter(), state=GetProductFromCatalogStates.get_category)
 async def get_category(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     category_id = callback_data.get('id')
@@ -28,10 +28,10 @@ async def get_category(callback: types.CallbackQuery, callback_data: dict, state
         'Выберите подкатегорию',
         reply_markup=subcategories_markup(subcategories)
     )
-    await GetProductFromCatalog.get_subcategory.set()
+    await GetProductFromCatalogStates.get_subcategory.set()
 
 
-@dp.callback_query_handler(subcategories_callback.filter(), state=GetProductFromCatalog.get_subcategory)
+@dp.callback_query_handler(subcategories_callback.filter(), state=GetProductFromCatalogStates.get_subcategory)
 async def get_subcategory(callback: types.Message, callback_data: dict, state: FSMContext):
     await callback.answer()
     state_data = await state.get_data()

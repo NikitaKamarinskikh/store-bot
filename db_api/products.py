@@ -1,5 +1,5 @@
 from  typing import List
-from web.products.models import Categories, Subcategories, Products
+from web.products.models import Categories, Subcategories, Products, ProductImages
 
 
 def get_all_categories() -> List[Categories]:
@@ -23,4 +23,16 @@ def get_products_by_category_and_subcategory(category_id: int, subcategory_id: i
     category = Categories.objects.get(pk=category_id)
     subcategory = Subcategories.objects.get(pk=subcategory_id)
     return Products.objects.filter(category=category, subcategory=subcategory)
+
+def get_product_by_id(product_id: int) -> Products:
+    return Products.objects.get(pk=product_id)
+
+
+def get_all_products() -> List[Products]:
+    return list(Products.objects.all())
+
+
+def get_product_images_by_product_id(product_id: int) -> List[ProductImages]:
+    product = Products.objects.get(pk=product_id)
+    return ProductImages.objects.filter(product=product)
 

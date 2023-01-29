@@ -22,9 +22,10 @@ class WholesaleOrder(StatesGroup):
     get_phone_number = State()
 
 
-class GetProductFromCatalog(StatesGroup):
+class GetProductFromCatalogStates(StatesGroup):
     get_category = State()
     get_subcategory = State()
+    chose_product = State()
     
 
 

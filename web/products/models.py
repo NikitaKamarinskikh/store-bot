@@ -44,7 +44,7 @@ class Products(models.Model):
     description = models.TextField(verbose_name='Описание')
     sizes = models.CharField(verbose_name='Размеры', max_length=60)
     price = models.IntegerField(verbose_name='Цена')
-    additional_products = models.ManyToManyField(AdditionalProducts, verbose_name='Дополнительные опции')
+    additional_products = models.ManyToManyField(AdditionalProducts, verbose_name='Дополнительные опции', blank=True)
 
     def __str__(self) -> str:
         return self.name
@@ -56,7 +56,7 @@ class Products(models.Model):
 
 class ProductImages(models.Model):
     product = models.ForeignKey(Products, verbose_name='Товар', on_delete=models.CASCADE)
-    photo = models.CharField(verbose_name='ID файла', max_length=255)
+    telegram_id = models.CharField(verbose_name='ID файла', max_length=255)
 
     class Meta:
         verbose_name = 'Фото товара'
