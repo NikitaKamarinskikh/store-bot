@@ -19,8 +19,8 @@ def add(client_telegram_id: int, product_id: int, additional_products: List[int]
     return basket
 
 
-def get_products_by_client_id(client_id: int) -> List[BasketProducts]:
-    client = Clients.objects.get(pk=client_id)
+def get_products_by_client_telegram_id(client_id: int) -> List[BasketProducts]:
+    client = Clients.objects.get(telegram_id=client_id)
     return list(BasketProducts.objects.filter(client=client))
 
 

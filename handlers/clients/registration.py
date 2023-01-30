@@ -20,18 +20,21 @@ from main import bot
 
 @dp.message_handler(CommandStart())
 async def start(message: types.Message, state: FSMContext):
-    await state.finish()
-    await GetProductFromCatalogStates.chose_product.set()
-    await _test(message, state)
-    # client = clients.get_by_telegram_id_or_none(message.from_user.id)
-    # if client is None:
-    #     await message.answer(
-    #         'Здравствуйте. Добро пожаловать. Здесь вы можете приобрести экипировку производства "Bear Gear"',
-    #         reply_markup=one_button_markup(RegistrationMessagesTexts.accept_welcome_message)
-    #     )
-    #     await ClientRegistrationStates.accept_welcome_message.set()
-    # else:
-    #     await message.answer('Вы уже зарегистрированы в боте')
+    # await state.finish()
+    # await GetProductFromCatalogStates.chose_product.set()
+    # await _test(message, state)
+    client = clients.get_by_telegram_id_or_none(message.from_user.id)
+    if client is None:
+        await message.answer(
+            'Здравствуйте. Добро пожаловать. Здесь вы можете приобрести экипировку производства "Bear Gear"',
+            reply_markup=one_button_markup(RegistrationMessagesTexts.accept_welcome_message)
+        )
+        await ClientRegistrationStates.accept_welcome_message.set()
+    else:
+        await message.answer(
+            'Вы уже зарегистрированы в боте',
+            reply_markup=main_markup
+        )
 
 
 async def _test(message: types.Message, state: FSMContext):
