@@ -25,5 +25,7 @@ def get_products_by_client_telegram_id(client_id: int) -> List[BasketProducts]:
 
 
 def clear(client_telegrm_id: int) -> None:
-    ...
+    client = Clients.objects.get(telegram_id=client_telegrm_id)
+    BasketProducts.objects.filter(client=client).delete()
+
 

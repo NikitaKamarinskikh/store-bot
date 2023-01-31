@@ -141,11 +141,7 @@ async def confirm_order(callback: types.CallbackQuery, state: FSMContext):
     order_data.products = basket_products
 
     orders_model.create(order_data)
-
-    print(basket_products)
-
-    for bp in basket_products:
-        print(bp.additional_products.all())
+    basket_model.clear(callback.from_user.id)
 
     await state.finish()
 
