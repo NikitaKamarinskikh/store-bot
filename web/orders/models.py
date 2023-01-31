@@ -8,7 +8,7 @@ from config import OrderStatuses
 class Orders(models.Model):
     client = models.ForeignKey(Clients, verbose_name='Клиент', on_delete=models.CASCADE)
     recipient_full_name = models.CharField(verbose_name='ФИО получателя', max_length=255)
-    created_at = models.DateField(verbose_name='Дата заказа', auto_now_add=True)
+    created_at = models.DateTimeField(verbose_name='Дата заказа', auto_now_add=True)
     transport_company = models.ForeignKey(TransportCompanies, verbose_name='Транспортная компания', on_delete=models.CASCADE, null=True, blank=True)
     phone_number = models.CharField(verbose_name='Номер телефона', max_length=255)
     delivery_address = models.CharField(verbose_name='Адрес доставки', max_length=255)

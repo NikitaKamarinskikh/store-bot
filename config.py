@@ -40,3 +40,14 @@ class StoreInfoDescription:
     text: str = ''
     images: list = field(default_factory=list)
     videos: list = field(default_factory=list)
+
+
+order_points = {
+    'receiver_full_name': 'ФИО',
+    'receiver_phone_number': 'Номер телефона',
+    'transport_company': 'Транспортная компания',
+    'delivery_address': 'Адрес доставки',
+    'desired_completion_date': 'Желаемая дата доставки',
+    'last_completion_date': 'Крайний срок доставки'
+}
+

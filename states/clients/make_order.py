@@ -27,9 +27,16 @@ class GetProductFromCatalogStates(StatesGroup):
     get_category = State()
     get_subcategory = State()
     chose_product = State()
-    
 
 
+class UpdateOrderStates(StatesGroup):
+    get_order_point = State()
+    update_receiver_full_name = State()
+    update_receiver_phone_number = State()
+    update_transport_company = State()
+    update_delivery_address = State()
+    update_desired_completion_date = State()
+    update_last_completion_date = State()
 
 
 

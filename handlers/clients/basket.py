@@ -6,9 +6,10 @@ from web.basket.models import BasketProducts
 from main import dp
 from messages_texts import OrdersMessagesText
 from db_api import basket as basket_model, transport_companies as transport_companies_model, orders as orders_model
-from keyboards.inline.orders_markups import make_order_markup, make_order_callback, confirm_order_markup, confirm_order_callback
+from keyboards.inline.orders_markups import make_order_markup, make_order_callback, confirm_order_markup, confirm_order_callback, update_order_callback,\
+    update_order_points_markup, update_order_point_callback
 from keyboards.inline.transport_companies import transport_companies_markup, transport_companies_callback
-from states.clients.make_order import MakeOrderStates
+from states.clients.make_order import MakeOrderStates, UpdateOrderStates
 from config import OrderData
 
 
@@ -144,5 +145,95 @@ async def confirm_order(callback: types.CallbackQuery, state: FSMContext):
     basket_model.clear(callback.from_user.id)
 
     await state.finish()
+
+
+@dp.callback_query_handler(update_order_callback.filter(), state=MakeOrderStates.confirm_order)
+async def update_order(callback: types.CallbackQuery, state: FSMContext):
+    await callback.answer()
+    await callback.message.answer(
+        'Что вы хотите изменить?',
+        reply_markup=update_order_points_markup()
+    )
+    await UpdateOrderStates.get_order_point.set()
+
+
+@dp.callback_query_handler(update_order_point_callback.filter(), state=UpdateOrderStates.get_order_point)
+async def get_order_point(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    await callback.answer()
+    order_point = callback_data.get('order_point')
+    if order_point == 'receiver_full_name':
+        await UpdateOrderStates.update_receiver_full_name.set()
+        await callback.message.answer('Введите новые данные')
+    elif order_point == 'receiver_phone_number':
+        await UpdateOrderStates.update_receiver_phone_number.set()
+        await callback.message.answer('Введите новые данные')
+    elif order_point == 'transport_company':
+        transport_companies = transport_companies_model.get_all()
+        await callback.message.answer(
+            'Выберите транспортную компанию',
+            reply_markup=transport_companies_markup(transport_companies)
+        )
+        await UpdateOrderStates.update_transport_company.set()
+    elif order_point == 'delivery_address':
+        await UpdateOrderStates.update_delivery_address.set()
+        await callback.message.answer('Введите новые данные')
+    elif order_point == 'desired_completion_date':
+        await UpdateOrderStates.update_desired_completion_date.set()
+        await callback.message.answer('Введите новые данные')
+    elif order_point == 'last_completion_date':
+        await UpdateOrderStates.update_last_completion_date.set()
+        await callback.message.answer('Введите новые данные')
+
+
+@dp.message_handler(state=UpdateOrderStates.update_receiver_full_name)
+async def update_receiver_full_name(message: types.Message, state: FSMContext):
+    recipient_full_name = message.text
+    await state.update_data(recipient_full_name=recipient_full_name)
+    await _reask(message, state)
+
+
+@dp.message_handler(state=UpdateOrderStates.update_receiver_phone_number)
+async def update_receiver_phone_number(message: types.Message, state: FSMContext):
+    recipient_phone_number = message.text
+    await state.update_data(recipient_phone_number=recipient_phone_number)
+    await _reask(message, state)
+
+
+@dp.callback_query_handler(transport_companies_callback.filter(), state=UpdateOrderStates.update_transport_company)
+async def update_transport_company(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    await callback.answer()
+    transport_company_id = callback_data.get('transport_company_id')
+    await state.update_data(transport_company_id=transport_company_id)
+    await _reask(callback.message, state)
+
+
+@dp.message_handler(state=UpdateOrderStates.update_delivery_address)
+async def update_delivery_address(message: types.Message, state: FSMContext):
+    delivery_address = message.text
+    await state.update_data(delivery_address=delivery_address)
+    await _reask(message, state)
+
+
+@dp.message_handler(state=UpdateOrderStates.update_desired_completion_date)
+async def update_desired_completion_date(message: types.Message, state: FSMContext):
+    desired_completion_date = message.text
+    await state.update_data(desired_completion_date=desired_completion_date)
+    await _reask(message, state)
+
+
+
+@dp.message_handler(state=UpdateOrderStates.update_last_completion_date)
+async def update_last_completion_date(message: types.Message, state: FSMContext):
+    last_completion_date = message.text
+    await state.update_data(last_completion_date=last_completion_date)
+    await _reask(message, state)
+
+
+async def _reask(message: types.Message, state: FSMContext) -> None:
+    order_data = await _collect_order_data(message.from_user.id, state)
+    await _show_order_data(message, order_data)
+    await MakeOrderStates.confirm_order.set()
+
+
 
 

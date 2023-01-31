@@ -2,11 +2,13 @@ from typing import List
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 from web.transport_companies.models import TransportCompanies
+from config import order_points
 
 
 make_order_callback = CallbackData('make_order')
 confirm_order_callback = CallbackData('confirm_order')
 update_order_callback = CallbackData('update_order')
+update_order_point_callback = CallbackData('update_order_point', 'order_point')
 
 
 def make_order_markup() -> InlineKeyboardMarkup:
@@ -35,6 +37,19 @@ def confirm_order_markup() -> InlineKeyboardMarkup:
         )
     )
     return markup
+
+
+def update_order_points_markup() ->  InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup()
+    for order_point, order_point_name in order_points.items():
+        markup.add(
+            InlineKeyboardButton(
+                text=order_point_name,
+                callback_data=update_order_point_callback.new(order_point)
+            )
+        )
+    return markup
+
 
 
 
