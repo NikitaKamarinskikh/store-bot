@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Union
+from typing import Union, List
 
 from web.clients.models import Clients
 
@@ -36,5 +36,17 @@ def add_coins(client_telegram_id: int, coins_quantity: int) -> Clients:
     client.coins += coins_quantity
     client.save()
     return client
+
+
+def get_all() -> List[Clients]:
+    return list(Clients.objects.all())
+
+
+def get_all_who_has_orders() -> List[Clients]:
+    return Clients.objects.filter(orders_quantity__gt=0)
+
+
+def get_all_who_has_no_order() -> List[Clients]:
+    return Clients.objects.filter(orders_quantity=0)
 
 
