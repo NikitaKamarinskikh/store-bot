@@ -49,14 +49,7 @@ async def accept_welcome_message(message: types.Message):
 @dp.message_handler(text=RegistrationMessagesTexts.accept_privacy_policy_message,
                     state=ClientRegistrationStates.accept_privacy_policy)
 async def accept_privacy_policy(message: types.Message, state: FSMContext):
-    state_data = await state.get_data()
-    referrer_telegram_id = state_data.get('referrer_telegram_id')
-    if referrer_telegram_id is not None:
-        referral_program_settings = load_referral_program_settings_from_json_file()
-        if referral_program_settings.user_acquisition_reward_satus:
-            client_notification.notify_client_about_new_referral(message.from_user.id, referral_program_settings.user_acquisition_reward)
-
-    clients.create(message.from_user.id, message.from_user.username)
+    await _register_client(message, state)
     await message.answer(
         """Главное меню:
 1. Заказ - для выбора из каталога, оформления нестандартного заказа, а так же оптового заказа.
@@ -67,6 +60,27 @@ async def accept_privacy_policy(message: types.Message, state: FSMContext):
     )
 
     await state.finish()
+
+
+async def _register_client(message: types.Message, state: FSMContext) -> None:
+    client_data = {
+        'telegram_id': message.from_user.id,
+        'username': message.from_user.username
+    }
+
+    state_data = await state.get_data()
+    referrer_telegram_id = state_data.get('referrer_telegram_id')
+
+    if referrer_telegram_id is not None:
+        client_data['referrer_telegram_id'] =  referrer_telegram_id
+        referral_program_settings = load_referral_program_settings_from_json_file()
+        if referral_program_settings.user_acquisition_reward_satus:
+            client_notification.notify_client_about_new_referral(message.from_user.id, referral_program_settings.user_acquisition_reward)
+
+        client_data['bonus_coins_quantity'] = 100
+
+    clients.create(**client_data)
+
 
 
 

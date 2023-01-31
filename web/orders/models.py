@@ -10,14 +10,15 @@ class Orders(models.Model):
     recipient_full_name = models.CharField(verbose_name='ФИО получателя', max_length=255)
     created_at = models.DateField(verbose_name='Дата заказа', auto_now_add=True)
     transport_company = models.ForeignKey(TransportCompanies, verbose_name='Транспортная компания', on_delete=models.CASCADE, null=True, blank=True)
+    phone_number = models.CharField(verbose_name='Номер телефона', max_length=255)
     delivery_address = models.CharField(verbose_name='Адрес доставки', max_length=255)
     desired_completion_date = models.CharField(verbose_name='Желаемая дата выполнения', max_length=100)
     last_completion_date = models.CharField(verbose_name='Последняя дата выполнения', max_length=100)
     status = models.CharField(verbose_name='Статус', max_length=100, choices=OrderStatuses.choices(), default=OrderStatuses.PENDING_PROCESSING.name)
 
     def __str__(self) -> str:
-        return f"{self.client} | {self.product} | {self.product_quantity}"
-    
+        return f'{self.client}'
+
     class Meta:
         ordering= ['-created_at']
         verbose_name = 'Заказ'
@@ -25,7 +26,7 @@ class Orders(models.Model):
 
 
 class OrderProducts(models.Model):
-    order = models.ForeignKey(Orders, verbose_name='Заказ', on_delete=models.CASCADE)
+    order = models.ForeignKey(Orders, verbose_name='Заказ', on_delete=models.CASCADE, null=True)
     product = models.ForeignKey(Products, verbose_name='Товар', on_delete=models.CASCADE)
     additional_products = models.ManyToManyField(AdditionalProducts, verbose_name='Дополнительные товары', blank=True)
 

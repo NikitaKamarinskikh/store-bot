@@ -4,7 +4,7 @@ from aiogram.utils.callback_data import CallbackData
 from web.transport_companies.models import TransportCompanies
 
 
-transport_companies_callback = CallbackData('transport_companies', 'id')
+transport_companies_callback = CallbackData('transport_companies', 'transport_company_id')
 
 
 def transport_companies_markup(transport_companies: List[TransportCompanies]) -> InlineKeyboardMarkup:

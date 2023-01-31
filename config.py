@@ -1,4 +1,6 @@
 from environs import Env
+from dataclasses import dataclass, field
+from typing import NamedTuple, List
 from enum import Enum
 
 
@@ -21,7 +23,15 @@ class OrderStatuses(str, Enum):
         return tuple((item.name, item.value) for item in cls)
 
 
-
-
+@dataclass
+class OrderData:
+    client_telegram_id: int
+    recipient_full_name: str
+    recipient_phone_number: str
+    transport_company_id: int
+    delivery_address: str
+    desired_completion_date: str
+    last_completion_date: str
+    products: list = field(default_factory=list) # BasketProducts
 
 
