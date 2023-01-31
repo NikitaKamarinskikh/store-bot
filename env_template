@@ -1,8 +1,0 @@
-BOT_TOKEN=
-ADMINS=
-# IP=localhost
-DB_NAME=postgres
-DB_USER=postgres
-POSTGRES_PASSWORD=1
-DB_HOST=db
-DB_PORT=5432
