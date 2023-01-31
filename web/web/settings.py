@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'web.mailing',
     'web.basket',
     'web.referral_program',
+    'web.store_info',
 ]
 
 MIDDLEWARE = [
