@@ -35,3 +35,8 @@ class OrderData:
     products: list = field(default_factory=list) # BasketProducts
 
 
+@dataclass
+class StoreInfoDescription:
+    text: str = ''
+    images: list = field(default_factory=list)
+    videos: list = field(default_factory=list)
