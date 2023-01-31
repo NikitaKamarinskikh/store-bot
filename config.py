@@ -12,6 +12,16 @@ BOT_TOKEN = env.str('BOT_TOKEN')
 PRIVACY_POLICY_FILE_TELEGRAM_ID = env.str('PRIVACY_POLICY_FILE_TELEGRAM_ID')
 
 
+class ClientsCategories(str, Enum):
+    ALL = 'Все'
+    HAS_ORDERS = 'Всем кто делал заказы'
+    HAS_NO_ORDER = 'Всем кто не делал заказы'
+
+    @classmethod
+    def choices(cls) -> tuple:
+        return tuple((item.name, item.value) for item in cls)
+
+
 class OrderStatuses(str, Enum):
     PENDING_PROCESSING = 'Ожидает обработки'
     PROCESSED = 'Обработан'
