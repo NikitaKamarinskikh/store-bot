@@ -1,1 +1,8 @@
-{"user_acquisition_reward": 150, "referral_reward": 200, "referral_order_reward": 35, "make_order_reward": 100, "user_acquisition_reward_satus": true, "make_order_reward_status": false, "referral_order_reward_status": false}
+{"user_acquisition_reward": 150,
+"referral_reward": 200,
+"referral_order_reward_in_percentages": 35,
+"make_order_reward_in_percentages": 100,
+"user_acquisition_reward_satus": true,
+"make_order_reward_status": false,
+"referral_order_reward_status": false}
+

@@ -8,8 +8,8 @@ def load_referral_program_settings_from_json_file() -> ReferralProgramSettings:
         referral_program_settings = ReferralProgramSettings(
             data['user_acquisition_reward'],
             data['referral_reward'],
-            data['referral_order_reward'],
-            data['make_order_reward'],
+            data['referral_order_reward_in_percentages'],
+            data['make_order_reward_in_percentages'],
             data['user_acquisition_reward_satus'],
             data['make_order_reward_status'],
             data['referral_order_reward_status']

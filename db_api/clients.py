@@ -15,5 +15,9 @@ def get_by_telegram_id_or_none(telegram_id: int | str) -> Union[Clients, None]:
     return Clients.objects.filter(telegram_id=telegram_id).first()
 
 
+def get_client_referrals_quantity(client_telegrm_id: int) -> int:
+    client = Clients.objects.get(telegram_id=client_telegrm_id)
+    return Clients.objects.filter(referrer=client).count()
+
 
 
