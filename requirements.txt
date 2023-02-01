@@ -5,3 +5,4 @@ asgiref~=3.3.1
 psycopg2-binary
 Pillow
 aioschedule
+requests

@@ -24,8 +24,9 @@ class ClientsCategories(str, Enum):
 
 class OrderStatuses(str, Enum):
     PENDING_PROCESSING = 'Ожидает обработки'
-    PROCESSED = 'Обработан'
-    PAID = 'Оплачен'
+    IN_PROGRESS = 'В работе'
+    IN_DELIVERY = 'Передан в доставку'
+    SENT = 'Отправлен'
     REJECTED = 'Отклонен'
 
     @classmethod
