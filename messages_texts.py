@@ -19,7 +19,7 @@ CATALOG_MESSAGE_TEXT="""
 
 class MainMenuMessagesTexts(NamedTuple):
     make_order = 'Заказ'
-    catalog = 'Поиск'
+    certificate = 'Активировать сертификат'
     bonuses = 'Кошелек'
     info = 'Общая информация'
 
