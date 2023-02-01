@@ -4,10 +4,10 @@ REFERRAL_PROGRAM_SETTINGS_FILE_NAME = 'referral_program_settings.json'
 
 @dataclass
 class ReferralProgramSettings:
-    user_acquisition_reward: int # Вознаграждение за привлечение пользователя.
-    referral_reward: int # Вознаграждение привлеченному пользователю.
-    referral_order_reward_in_percentages: int # Вознаграждение в % за заказ привлеченным пользователем.
-    make_order_reward_in_percentages: int # Вознаграждение себе в % за свой заказ
+    user_acquisition_reward: int = 0 # Вознаграждение за привлечение пользователя.
+    referral_reward: int = 0  # Вознаграждение привлеченному пользователю.
+    referral_order_reward_in_percentages: int = 0 # Вознаграждение в % за заказ привлеченным пользователем.
+    make_order_reward_in_percentages: int =  0 # Вознаграждение себе в % за свой заказ
     user_acquisition_reward_satus: bool = False # вознаграждение, за приглашение, пока преферал не сделал заказ.
     make_order_reward_status: bool = False # вознаграждение за собственный заказ.
     referral_order_reward_status: bool = False # вознаграждение за заказ рефералов

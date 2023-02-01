@@ -18,6 +18,7 @@
     <div class="container">
         
         <div class="form-wrapper col-6">
+            <h2><a class="btn btn-primary" href="/admin/">Админ панель</a></h2>
             <form action="{% url 'update-referral-program-settings'%}" method="POST">
                 <label for="user_acquisition_reward">Вознаграждение за привлечение пользователя</label>
                 <input type="number" min="1" value="{{ settings.user_acquisition_reward }}" class="form-control" name="user_acquisition_reward">
@@ -26,12 +27,12 @@
                 <input type="number" min="1" value="{{ settings.referral_reward }}" class="form-control" name="referral_reward">                
 
 
-                <label for="referral_order_reward">Вознаграждение в % за заказ привлеченным пользователем</label>
-                <input type="number" min="1" value="{{ settings.referral_order_reward }}" class="form-control" name="referral_order_reward">                
+                <label for="referral_order_reward_in_percentages">Вознаграждение в % за заказ привлеченным пользователем</label>
+                <input type="number" min="1" value="{{ settings.referral_order_reward_in_percentages }}" class="form-control" name="referral_order_reward_in_percentages">                
 
 
-                <label for="make_order_reward">Вознаграждение себе в % за свой заказ</label>
-                <input type="number" min="1" value="{{ settings.make_order_reward }}" class="form-control" name="make_order_reward">                
+                <label for="make_order_reward_in_percentages">Вознаграждение себе в % за свой заказ</label>
+                <input type="number" min="1" value="{{ settings.make_order_reward_in_percentages }}" class="form-control" name="make_order_reward_in_percentages">                
 
                 <div class="">
                     

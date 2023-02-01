@@ -1,8 +1,11 @@
+import os.path
 import json
+
 from .config import REFERRAL_PROGRAM_SETTINGS_FILE_NAME, ReferralProgramSettings
 
-
 def load_referral_program_settings_from_json_file() -> ReferralProgramSettings:
+    if not os.path.exists(REFERRAL_PROGRAM_SETTINGS_FILE_NAME):
+        return ReferralProgramSettings()
     with open(REFERRAL_PROGRAM_SETTINGS_FILE_NAME, 'r') as settings_file:
         data = json.load(settings_file)
         referral_program_settings = ReferralProgramSettings(

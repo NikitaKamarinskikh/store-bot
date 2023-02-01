@@ -15,8 +15,8 @@ def _convert_post_data_to_referral_program_settings(data: QueryDict) -> Referral
     settings = ReferralProgramSettings(
         int(data.get('user_acquisition_reward')),
         int(data.get('referral_reward')),
-        int(data.get('referral_order_reward')),
-        int(data.get('make_order_reward'))
+        int(data.get('referral_order_reward_in_percentages')),
+        int(data.get('make_order_reward_in_percentages'))
     )
     if 'user_acquisition_reward_satus' in data:
         settings.user_acquisition_reward_satus = True
