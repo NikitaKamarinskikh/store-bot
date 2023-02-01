@@ -21,10 +21,11 @@ from messages_texts import GET_BACK_MESSAGE_TEXT, CATALOG_MESSAGE_TEXT
                            GetProductFromCatalogStates.chose_product])
 async def get_back(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
+    basket_info = basket.get_info(message.from_user.id)
     if current_state == 'GetProductFromCatalogStates:get_category':
         await message.answer(
             CATALOG_MESSAGE_TEXT,
-            reply_markup=make_order_markup
+            reply_markup=make_order_markup(basket_info.as_string())
         )
         await state.finish()
     elif current_state == 'GetProductFromCatalogStates:get_subcategory':
@@ -128,6 +129,7 @@ async def add_additional_product(callback: types.CallbackQuery, callback_data: d
         (int(product_id), int(id))
     )
     await state.update_data(additional_products_list=additional_products_list)
+    await callback.message.answer('Дополнительный товар успешно добавлен')
 
 
 
@@ -141,6 +143,13 @@ async def add_product_to_basket(callback: types.CallbackQuery, callback_data: di
     additional_products_ids = _get_additional_products_ids_from_chosen_additional_products(additional_products_list, int(product_id))
 
     basket.add(callback.from_user.id, product_id, additional_products_ids)
+
+    basket_info = basket.get_info(callback.from_user.id)
+
+    await callback.message.answer(
+        f'Товар успешно добавлен в корзину',
+        reply_markup=get_product_from_catalog_markup(basket_info.as_string())
+    )
 
 
 def _get_additional_products_ids_from_chosen_additional_products(additional_products: List[Tuple[int, int]], product_id: int) -> List[int]:
@@ -160,9 +169,10 @@ def _collect_image_files_to_media_group(product_images: List[ProductImages]) -> 
 
 async def _ask_category(message: types.Message) -> None:
     categories = products_model.get_all_categories()
+    basket_info = basket.get_info(message.from_user.id)
     await message.answer(
         'Выберите категорию',
-        reply_markup=get_product_from_catalog_markup
+        reply_markup=get_product_from_catalog_markup(basket_info.as_string())
     )
     await message.answer(
         'Список доступных категорий',
