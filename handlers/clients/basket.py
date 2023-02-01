@@ -13,7 +13,7 @@ from states.clients.make_order import MakeOrderStates, UpdateOrderStates
 from config import OrderData
 
 
-@dp.message_handler(text=OrdersMessagesText.backet)
+@dp.message_handler(text=OrdersMessagesText.backet, state='*')
 async def get_basket_products(message: types.Message, state: FSMContext):
     basket_products = basket_model.get_products_by_client_telegram_id(message.from_user.id)
     if not basket_products:

@@ -6,7 +6,7 @@ from config import PRIVACY_POLICY_FILE_TELEGRAM_ID
 from keyboards.default.one_button_markup import one_button_markup
 from keyboards.default.main_markup import main_markup
 from states.clients.registration import ClientRegistrationStates
-from messages_texts import RegistrationMessagesTexts
+from messages_texts import RegistrationMessagesTexts,MAIN_MENU_TEXT
 from db_api import clients
 from notifications import client_notification
 from referral_program.referral_program import load_referral_program_settings_from_json_file
@@ -51,12 +51,8 @@ async def accept_welcome_message(message: types.Message):
 async def accept_privacy_policy(message: types.Message, state: FSMContext):
     await _register_client(message, state)
     await message.answer(
-        """Главное меню:
-1. Заказ - для выбора из каталога, оформления нестандартного заказа, а так же оптового заказа.
-2. Поиск - поиск по каталогу. Нажмите кнопку и начните вводить то что ищите.
-3. Кошелек - ваши бонусные монеты, за заказы и приглашения, которые можете потратить на
-4. Общая информация""",
-    reply_markup=main_markup
+        MAIN_MENU_TEXT,
+        reply_markup=main_markup
     )
 
     await state.finish()

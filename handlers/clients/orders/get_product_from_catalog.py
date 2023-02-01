@@ -5,21 +5,38 @@ from main import dp, bot
 from messages_texts import OrdersMessagesText
 from keyboards.inline.product_markups import categories_markup, categories_callback,\
     subcategories_markup, subcategories_callback
+from keyboards.default.products_markups import get_product_from_catalog_markup
+from keyboards.default.make_order_markup import make_order_markup
 from states.clients.make_order import GetProductFromCatalogStates
 from web.products.models import ProductImages
 from db_api import products as products_model, basket
 from keyboards.inline import product_markups
 from states.clients.make_order import GetProductFromCatalogStates
+from messages_texts import GET_BACK_MESSAGE_TEXT, CATALOG_MESSAGE_TEXT
+
+
+@dp.message_handler(text=GET_BACK_MESSAGE_TEXT,
+                    state=[GetProductFromCatalogStates.get_category,
+                           GetProductFromCatalogStates.get_subcategory,
+                           GetProductFromCatalogStates.chose_product])
+async def get_back(message: types.Message, state: FSMContext):
+    current_state = await state.get_state()
+    state_data = await state.get_data()
+    if current_state == 'GetProductFromCatalogStates:get_category':
+        await message.answer(
+            CATALOG_MESSAGE_TEXT,
+            reply_markup=make_order_markup
+        )
+        await state.finish()
+    elif current_state == 'GetProductFromCatalogStates:get_subcategory':
+        await _ask_category(message)
+    elif current_state == 'GetProductFromCatalogStates:chose_product':
+        await _ask_subcategory(message, state)
 
 
 @dp.message_handler(text=OrdersMessagesText.catalog)
 async def catalog(message: types.Message):
-    categories = products_model.get_all_categories()
-    await message.answer(
-        'Выберите категорию',
-        reply_markup=categories_markup(categories)
-    )
-    await GetProductFromCatalogStates.get_category.set()
+    await _ask_category(message)
 
 
 @dp.callback_query_handler(categories_callback.filter(), state=GetProductFromCatalogStates.get_category)
@@ -27,12 +44,7 @@ async def get_category(callback: types.CallbackQuery, callback_data: dict, state
     await callback.answer()
     category_id = callback_data.get('id')
     await state.update_data(category_id=category_id)
-    subcategories = products_model.get_subcategories_by_category_id(category_id)
-    await callback.message.answer(
-        'Выберите подкатегорию',
-        reply_markup=subcategories_markup(subcategories)
-    )
-    await GetProductFromCatalogStates.get_subcategory.set()
+    await _ask_subcategory(callback.message, state)
 
 
 @dp.callback_query_handler(subcategories_callback.filter(), state=GetProductFromCatalogStates.get_subcategory)
@@ -43,16 +55,6 @@ async def get_subcategory(callback: types.Message, callback_data: dict, state: F
     subcategory_id = callback_data.get('id')
     products = products_model.get_products_by_category_and_subcategory(category_id, subcategory_id)
 
-    for product in products:
-        print(product)
-        print(product.additional_products.all())
-
-
-
-
-
-async def _test(message: types.Message, state: FSMContext):
-    products = products_model.get_all_products()
     products_ids_list = [product.pk for product in products]
     await state.update_data(products_ids_list=products_ids_list, additional_products_list=[])
     
@@ -62,15 +64,16 @@ async def _test(message: types.Message, state: FSMContext):
     product_images = products_model.get_product_images_by_product_id(product.pk)
     if product_images:
         album = _collect_image_files_to_media_group(product_images)
-        images_id = await message.answer_media_group(album)
+        images_id = await callback.message.answer_media_group(album)
         await state.update_data(images_id=images_id)
     else:
         await state.update_data(images_id=None)
-    r = await message.answer(
+    r = await callback.message.answer(
         text=f'{product.name}\n{product.description}',
         reply_markup=markup
     )
     await state.update_data(menu_message_id=r.message_id)
+    await GetProductFromCatalogStates.chose_product.set()
 
 
 @dp.callback_query_handler(product_markups.next_product_callback.filter(), state=GetProductFromCatalogStates.chose_product)
@@ -155,6 +158,29 @@ def _collect_image_files_to_media_group(product_images: List[ProductImages]) -> 
         album.attach_photo(product_image.telegram_id)
     return album
 
+
+async def _ask_category(message: types.Message) -> None:
+    categories = products_model.get_all_categories()
+    await message.answer(
+        'Выберите категорию',
+        reply_markup=get_product_from_catalog_markup
+    )
+    await message.answer(
+        'Список доступных категорий',
+        reply_markup=categories_markup(categories)
+    )
+    await GetProductFromCatalogStates.get_category.set()
+
+
+async def _ask_subcategory(message: types.Message, state: FSMContext) -> None:
+    state_data = await state.get_data()
+    category_id = state_data.get('category_id')
+    subcategories = products_model.get_subcategories_by_category_id(category_id)
+    await message.answer(
+        'Выберите подкатегорию',
+        reply_markup=subcategories_markup(subcategories)
+    )
+    await GetProductFromCatalogStates.get_subcategory.set()
 
 
 

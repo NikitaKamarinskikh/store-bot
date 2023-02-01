@@ -5,8 +5,8 @@ from web.clients.models import Clients
 
 
 def create(telegram_id: int | str, username: str | None,
-           bonus_coins_quantity: int | None,
-           referrer_telegram_id: int | None
+           bonus_coins_quantity: int | None = None,
+           referrer_telegram_id: int | None = None
            ) -> Clients:
     if bonus_coins_quantity is None:
         bonus_coins_quantity = 0
