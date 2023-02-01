@@ -4,13 +4,83 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from web.basket.models import BasketProducts
 from main import dp
-from messages_texts import OrdersMessagesText
+from messages_texts import OrdersMessagesText, GET_BACK_MESSAGE_TEXT, MAIN_MENU_TEXT
 from db_api import basket as basket_model, transport_companies as transport_companies_model, orders as orders_model
 from keyboards.inline.orders_markups import make_order_markup, make_order_callback, confirm_order_markup, confirm_order_callback, update_order_callback,\
     update_order_points_markup, update_order_point_callback
 from keyboards.inline.transport_companies import transport_companies_markup, transport_companies_callback
+from keyboards.default.get_back_mrkup import get_back_markup
+from keyboards.default.main_markup import main_markup
 from states.clients.make_order import MakeOrderStates, UpdateOrderStates
 from config import OrderData
+
+
+@dp.message_handler(text=GET_BACK_MESSAGE_TEXT,
+                    state=[MakeOrderStates.get_recipient_full_name,
+                           MakeOrderStates.get_recipient_phone_number,
+                           MakeOrderStates.get_transport_company,
+                           MakeOrderStates.get_delivery_address,
+                           MakeOrderStates.get_desired_completion_date,
+                           MakeOrderStates.get_last_completion_date,
+                           MakeOrderStates.confirm_order])
+async def get_back(message: types.Message, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state == 'MakeOrderStates:get_recipient_full_name':
+        await message.answer(
+            MAIN_MENU_TEXT,
+            reply_markup=main_markup
+        )
+        await state.finish()
+    elif current_state == 'MakeOrderStates:get_recipient_phone_number':
+        await _ask_recipient_full_name(message)
+    elif current_state == 'MakeOrderStates:get_transport_company':
+        await _ask_recipient_phone_number(message)
+    elif current_state == 'MakeOrderStates:get_delivery_address':
+        await _ask_transport_company(message)
+    elif current_state == 'MakeOrderStates:get_desired_completion_date':
+        await _ask_delivery_address(message)
+    elif current_state == 'MakeOrderStates:get_last_completion_date':
+        await _ask_desired_completion_date(message)
+    elif current_state == 'MakeOrderStates:confirm_order':
+        await _ask_last_completion_date(message)
+
+
+
+async def _ask_recipient_full_name(message: types.Message) -> None:
+    await message.answer(
+        'Введите ФИО на кого оформлять заказ при отправке',
+        reply_markup=get_back_markup
+    )
+    await MakeOrderStates.get_recipient_full_name.set()
+
+
+async def _ask_recipient_phone_number(message: types.Message) -> None:
+    await message.answer('Укажите телефон получателя')
+    await MakeOrderStates.get_recipient_phone_number.set()
+
+
+async def _ask_transport_company(message: types.Message) -> None:
+    transport_companies = transport_companies_model.get_all()
+    await message.answer(
+        'Выберите транспортную компанию',
+        reply_markup=transport_companies_markup(transport_companies)
+    )
+    await MakeOrderStates.get_transport_company.set()
+
+
+async def _ask_delivery_address(message: types.Message) -> None:
+    await message.answer('Укажите адресс отправителя или центр выдачи')
+    await MakeOrderStates.get_delivery_address.set()
+
+
+async def _ask_desired_completion_date(message: types.Message) -> None:
+    await message.answer('Введите дату, желаемой готовности заказа')
+    await MakeOrderStates.get_desired_completion_date.set()
+
+
+async def _ask_last_completion_date(message: types.Message) -> None:
+    await message.answer('Введите дату, последнего срока готовности товара')
+    await MakeOrderStates.get_last_completion_date.set()
 
 
 @dp.message_handler(text=OrdersMessagesText.backet, state='*')
@@ -29,28 +99,21 @@ async def get_basket_products(message: types.Message, state: FSMContext):
 @dp.callback_query_handler(make_order_callback.filter())
 async def start_making_order(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
-    await callback.message.answer('Введите ФИО на кого оформлять заказ при отправке')
-    await MakeOrderStates.get_recipient_full_name.set()
+    await _ask_recipient_full_name(callback.message)
 
 
 @dp.message_handler(state=MakeOrderStates.get_recipient_full_name)
 async def get_recipient_full_name(message: types.Message, state: FSMContext):
     recipient_full_name = message.text
     await state.update_data(recipient_full_name=recipient_full_name)
-    await message.answer('Укажите телефон получателя')
-    await MakeOrderStates.get_recipient_phone_number.set()
+    await _ask_recipient_phone_number(message)
 
 
 @dp.message_handler(state=MakeOrderStates.get_recipient_phone_number)
 async def get_phone_number(message: types.Message, state: FSMContext):
     recipient_phone_number = message.text
-    transport_companies = transport_companies_model.get_all()
     await state.update_data(recipient_phone_number=recipient_phone_number)
-    await message.answer(
-        'Выберите транспортную компанию',
-        reply_markup=transport_companies_markup(transport_companies)
-    )
-    await MakeOrderStates.get_transport_company.set()
+    await _ask_transport_company(message)
 
 
 @dp.callback_query_handler(transport_companies_callback.filter(), state=MakeOrderStates.get_transport_company)
@@ -58,24 +121,21 @@ async def get_transport_company(callback: types.CallbackQuery, callback_data: di
     await callback.answer()
     transport_company_id = callback_data.get('transport_company_id')
     await state.update_data(transport_company_id=transport_company_id)
-    await callback.message.answer('Укажите адресс отправителя или центр выдачи')
-    await MakeOrderStates.get_delivery_address.set()
+    await _ask_delivery_address(callback.message)
 
 
 @dp.message_handler(state=MakeOrderStates.get_delivery_address)
 async def get_delivery_address(message: types.Message, state: FSMContext):
     delivery_address = message.text
     await state.update_data(delivery_address=delivery_address)
-    await message.answer('Введите дату, желаемой готовности заказа')
-    await MakeOrderStates.get_desired_completion_date.set()
+    await _ask_desired_completion_date(message)
 
 
 @dp.message_handler(state=MakeOrderStates.get_desired_completion_date)
 async def get_desired_completion_date(message: types.Message, state: FSMContext):
     desired_completion_date = message.text
     await state.update_data(desired_completion_date=desired_completion_date)
-    await message.answer('Введите дату, последнего срока готовности товара')
-    await MakeOrderStates.get_last_completion_date.set()
+    await _ask_last_completion_date(message)
 
 
 @dp.message_handler(state=MakeOrderStates.get_last_completion_date)

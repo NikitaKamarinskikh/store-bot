@@ -21,7 +21,6 @@ from messages_texts import GET_BACK_MESSAGE_TEXT, CATALOG_MESSAGE_TEXT
                            GetProductFromCatalogStates.chose_product])
 async def get_back(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
-    state_data = await state.get_data()
     if current_state == 'GetProductFromCatalogStates:get_category':
         await message.answer(
             CATALOG_MESSAGE_TEXT,
