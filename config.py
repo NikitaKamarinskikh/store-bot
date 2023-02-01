@@ -44,6 +44,7 @@ class OrderData:
     desired_completion_date: str
     last_completion_date: str
     products: list = field(default_factory=list) # BasketProducts
+    amount: int = 0
 
 
 @dataclass

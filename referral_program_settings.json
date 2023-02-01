@@ -3,6 +3,6 @@
 "referral_order_reward_in_percentages": 35,
 "make_order_reward_in_percentages": 100,
 "user_acquisition_reward_satus": true,
-"make_order_reward_status": false,
-"referral_order_reward_status": false}
+"make_order_reward_status": true,
+"referral_order_reward_status": true}
 

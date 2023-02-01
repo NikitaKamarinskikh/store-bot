@@ -5,6 +5,7 @@ from web.transport_companies.models import TransportCompanies
 from config import OrderStatuses
 from .notifications import notify_client_about_order_in_progress_status, notify_client_about_order_in_delivery_status,\
     notify_client_about_order_in_sent_status
+from .services import check_client_referrer
 
 
 class Orders(models.Model):
@@ -18,6 +19,7 @@ class Orders(models.Model):
     last_completion_date = models.CharField(verbose_name='Последняя дата выполнения', max_length=100)
     track_number = models.CharField(verbose_name='Трек номер', max_length=255, null=True, blank=True)
     status = models.CharField(verbose_name='Статус', max_length=100, choices=OrderStatuses.choices(), default=OrderStatuses.PENDING_PROCESSING.name)
+    amount = models.PositiveIntegerField(verbose_name='Общая стоимость', default=0)
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -32,6 +34,8 @@ class Orders(models.Model):
         if self.status != self._old_status:
             if self.status == OrderStatuses.IN_PROGRESS.name:
                 notify_client_about_order_in_progress_status(self.client.telegram_id, self.pk)
+                check_client_referrer(self.client.telegram_id, self.amount)
+
             elif self.status == OrderStatuses.IN_DELIVERY.name:
                 notify_client_about_order_in_delivery_status(self.client.telegram_id, self.pk)
             self._old_status = self.status

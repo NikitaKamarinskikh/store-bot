@@ -50,3 +50,8 @@ def get_all_who_has_no_order() -> List[Clients]:
     return Clients.objects.filter(orders_quantity=0)
 
 
+def increment_orders_quantity(client_telegram_id: int) -> None:
+    client = Clients.objects.get(telegram_id=client_telegram_id)
+    client.orders_quantity = client.orders_quantity + 1
+    client.save()
+

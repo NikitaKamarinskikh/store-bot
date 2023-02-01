@@ -196,11 +196,14 @@ def _format_basket_products(basket_products: List[BasketProducts]) -> str:
 @dp.callback_query_handler(confirm_order_callback.filter(), state=MakeOrderStates.confirm_order)
 async def confirm_order(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
+    current_basket_info = basket_model.get_info(callback.from_user.id)
     order_data = await _collect_order_data(callback.from_user.id, state)
     basket_products = basket_model.get_products_by_client_telegram_id(callback.from_user.id)
     order_data.products = basket_products
+    order_data.amount = current_basket_info.amount_in_rub
 
     order = orders_model.create(order_data)
+
     basket_model.clear(callback.from_user.id)
 
     basket_info = basket_model.get_info(callback.from_user.id)

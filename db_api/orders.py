@@ -16,7 +16,8 @@ def create(order_data: OrderData) -> Orders:
         phone_number=order_data.recipient_phone_number,
         delivery_address=order_data.delivery_address,
         desired_completion_date=order_data.desired_completion_date,
-        last_completion_date=order_data.last_completion_date
+        last_completion_date=order_data.last_completion_date,
+        amount=order_data.amount
     )
 
     for basket_product in order_data.products:

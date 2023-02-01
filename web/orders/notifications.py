@@ -17,6 +17,16 @@ def notify_client_about_order_in_sent_status(client_telegram_id: int, order_id: 
     _send_message_by_telegram_bot_api(client_telegram_id, message_text)
 
 
+def notify_client_about_first_order_of_his_referral(client_telegram_id: int, coins: int) -> None:
+    message_text= f'Вам начислено {coins} монет за первый заказ друга'
+    _send_message_by_telegram_bot_api(client_telegram_id, message_text)
+
+
+def notify_client_about_new_order_of_his_referral(client_telegram_id: int, coins: int) -> None:
+    message_text= f'Вам начислено {coins} за заказ вашим другом'
+    _send_message_by_telegram_bot_api(client_telegram_id, message_text)
+
+
 def _send_message_by_telegram_bot_api(client_telegram_id: int, text: str) -> None:
     bot_token = env.str('BOT_TOKEN')
     link = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id=' \
