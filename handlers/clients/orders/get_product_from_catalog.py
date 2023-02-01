@@ -69,7 +69,7 @@ async def get_subcategory(callback: types.Message, callback_data: dict, state: F
     else:
         await state.update_data(images_id=None)
     r = await callback.message.answer(
-        text=f'{product.name}\n{product.description}',
+        text=f'{product.name}\n{product.description}\n{product.price} руб.',
         reply_markup=markup
     )
     await state.update_data(menu_message_id=r.message_id)
@@ -104,7 +104,7 @@ async def next_product(callback: types.CallbackQuery, callback_data: dict, state
             message_id=menu_message_id
         )
         r = await callback.message.answer(
-            text=f'{product.name}\n{product.description}',
+            text=f'{product.name}\n{product.description}\n{product.price} руб.',
             reply_markup=markup
         )
         await state.update_data(images_id=images_id, menu_message_id=r.message_id)
@@ -113,7 +113,7 @@ async def next_product(callback: types.CallbackQuery, callback_data: dict, state
         await bot.edit_message_text(
             chat_id=callback.from_user.id,
             message_id=menu_message_id,
-            text=f'{product.name}\n{product.description}',
+            text=f'{product.name}\n{product.description}\n{product.price} руб.',
             reply_markup=markup
         )
 

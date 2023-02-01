@@ -1,9 +1,0 @@
-{
-    "user_acquisition_reward": 100,
-    "referral_reward": 100,
-    "referral_order_reward": 100,
-    "make_order_reward": 100,
-    "user_acquisition_reward_satus": false,
-    "make_order_reward_status": false,
-    "referral_order_reward_status": false
-}

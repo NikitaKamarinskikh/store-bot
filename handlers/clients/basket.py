@@ -184,7 +184,7 @@ def _format_basket_products(basket_products: List[BasketProducts]) -> str:
     products_info = ''
     product_number= 1
     for basket_product in basket_products:
-        products_info += f'{product_number}. {basket_product.product.name} {basket_product.product.price}\n'
+        products_info += f'{product_number}. {basket_product.product.name} {basket_product.product.price} руб.\n'
         additional_products = basket_product.additional_products
         for additional_product in additional_products.all():
             products_info += f'+ {additional_product.name} {additional_product.price} руб.\n'
@@ -210,7 +210,7 @@ async def confirm_order(callback: types.CallbackQuery, state: FSMContext):
 
     await callback.message.answer(
         f'Ваш заказ {order.pk} оформлен, скоро с вами свяжутся.',
-        reply_markup=make_order_markup(basket_info.as_string())
+        reply_markup=main_markup
     )
     await state.finish()
 
