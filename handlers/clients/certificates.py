@@ -2,11 +2,11 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from main import dp
 from states.clients.certificates import CertificatesStates
-from messages_texts import MainMenuMessagesTexts
+from messages_texts import ReferralProgramMessagesTexts
 from db_api import certificates, clients
 
 
-@dp.message_handler(text=MainMenuMessagesTexts.certificate)
+@dp.message_handler(text=ReferralProgramMessagesTexts.activate_certificate)
 async def certificate(message: types.Message):
     await message.answer('Введите код сертификата')
     await CertificatesStates.get_certificate_hash.set()

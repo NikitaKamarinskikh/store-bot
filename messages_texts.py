@@ -19,7 +19,7 @@ CATALOG_MESSAGE_TEXT="""
 
 class MainMenuMessagesTexts(NamedTuple):
     make_order = 'Заказ'
-    certificate = 'Активировать сертификат'
+    search_product = 'Поиск'
     bonuses = 'Кошелек'
     info = 'Общая информация'
 
@@ -39,6 +39,7 @@ class OrdersMessagesText(NamedTuple):
 
 class ReferralProgramMessagesTexts(NamedTuple):
     invite_user = 'Пригласить'
+    activate_certificate = 'Активировать сертификат'
     back = 'Назад'
 
 
