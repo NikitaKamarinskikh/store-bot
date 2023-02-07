@@ -20,7 +20,9 @@ class OrdersAdmin(admin.ModelAdmin):
     list_display = ('client', 'created_at',
                     'desired_completion_date', 'last_completion_date', 'status')
     list_display_links  = ('client',)
-    readonly_fields = ('created_at',)
+    
+    readonly_fields = ('created_at', 'client')
+
     list_filter = ('status',)
     inlines = [OrderProductsInline]
 

@@ -1,3 +1,4 @@
+from datetime import datetime
 from aiogram import types
 from typing import List
 from web.mailing.models import MailingLists, MailingListsImages, MailingListsVideos
@@ -9,9 +10,12 @@ from main import bot
 
 async def check_mailing():
     mailings = MailingLists.objects.all()
+    current_time = datetime.now().replace(second=0, microsecond=0)
     for mailing in mailings:
-        await _exec_mainling(mailing)
-        mailing.delete()
+        mailing_sending_time = mailing.sending_time.replace(second=0, microsecond=0)
+        if mailing_sending_time == current_time:
+            await _exec_mainling(mailing)
+            mailing.delete()
 
 
 async def _exec_mainling(mailing: MailingLists) -> None:

@@ -1,4 +1,4 @@
-from common import send_message
+from .common import send_message
 
 
 

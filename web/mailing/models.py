@@ -6,6 +6,8 @@ class MailingLists(models.Model):
     text = models.TextField(verbose_name='Текст')
     clients_category = models.CharField(verbose_name='Категория пользователей', max_length=100,
                                         choices=ClientsCategories.choices())
+    sending_time = models.DateTimeField(verbose_name='Время отправки', blank=True, null=True)
+
 
     def __str__(self) -> str:
         return self.text[:20]
