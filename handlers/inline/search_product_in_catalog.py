@@ -3,22 +3,6 @@ from main import dp
 from db_api import products as products_model
 
 
-# @dp.inline_handler(text='')
-# async def empty_query(inline_query: types.InlineQuery):
-#     await inline_query.answer(
-#         results=[
-#             types.InlineQueryResultArticle(
-#                 id='unknown',
-#                 title='Введите запрос',
-#                 input_message_content=types.InputTextMessageContent(
-#                     message_text='Необходимо выбрать товар'
-#                 )
-#             )
-#         ],
-#         cache_time=5
-#     )
-
-
 @dp.inline_handler()
 async def query(query: types.InlineQuery):
     user_id = query.from_user.id
