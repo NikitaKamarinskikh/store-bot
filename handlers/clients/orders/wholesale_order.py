@@ -4,6 +4,7 @@ from messages_texts import OrdersMessagesText
 from states.clients.make_order import WholesaleOrder
 from keyboards.default.main_markup import main_markup
 from main import dp
+from notifications.managers import notify_managers_about_wholesale_order
 
 
 @dp.message_handler(text=OrdersMessagesText.wholesale_order)
@@ -33,9 +34,12 @@ async def get_full_name(message: types.Message, state: FSMContext):
 @dp.message_handler(state=WholesaleOrder.get_phone_number)
 async def get_phone_number(message: types.Message, state:FSMContext):
     phone_number = message.text
-    await state.finish()
+    state_data = await state.get_data()
+    text = f'Новый запрос на оптовый заказ\nОписание: {state_data.get("product_description")}\nФИО: {state_data.get("client_full_name")}\nТелефон: {phone_number}'
+    await notify_managers_about_wholesale_order(text)
     await message.answer(
-        'done',
+        'Данные успешно отправлены менеджеру',
         reply_markup=main_markup
     )
+    await state.finish()
 

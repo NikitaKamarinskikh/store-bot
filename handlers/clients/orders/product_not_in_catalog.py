@@ -3,6 +3,7 @@ from aiogram.dispatcher import FSMContext
 from messages_texts import OrdersMessagesText
 from states.clients.make_order import ProductNotInCategoryStates
 from keyboards.default.main_markup import main_markup
+from notifications.managers import notify_managers_about_product_not_in_catalog
 from main import dp
 
 
@@ -33,15 +34,12 @@ async def get_full_name(message: types.Message, state: FSMContext):
 @dp.message_handler(state=ProductNotInCategoryStates.get_phone_number)
 async def get_phone_number(message: types.Message, state:FSMContext):
     phone_number = message.text
-    await state.finish()
+    state_data = await state.get_data()
+    text = f'Новый запрос\nОписание: {state_data.get("product_description")}\nФИО {state_data.get("client_full_name")}\nТелефон: {phone_number}'
+    await notify_managers_about_product_not_in_catalog(text)
     await message.answer(
-        'done',
+        'Данные отправлены менеджеру',
         reply_markup=main_markup
     )
-
-
-
-
-
-
+    await state.finish()
 
