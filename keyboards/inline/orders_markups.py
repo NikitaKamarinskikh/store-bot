@@ -16,7 +16,7 @@ def make_order_markup() -> InlineKeyboardMarkup:
     markup.add(
         InlineKeyboardButton(
             text='Оформить заказ',
-            callback_data=make_order_callback.new()
+            callback_data=make_order_callback.new(),
         )
     )
     return markup
@@ -49,7 +49,3 @@ def update_order_points_markup() ->  InlineKeyboardMarkup:
             )
         )
     return markup
-
-
-
-

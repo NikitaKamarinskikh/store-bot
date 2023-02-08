@@ -45,26 +45,9 @@ def get_product_images_by_product_id(product_id: int) -> List[ProductImages]:
 
 def get_products_by_name_pattern(pattern: str) -> List[Products]:
     products = Products.objects.all()
-    filtered_products = [product for product in products if _levenstein(product.name, pattern) <= 3]
+    filtered_products = [product for product in products
+    if product.name[0: len(pattern)].lower() == pattern.lower()]
     return filtered_products
 
 
-def _levenstein(lhs: str, rhs: str) -> int:
-    lhs = lhs.lower()
-    rhs = rhs.lower()
-    n, m = len(lhs), len(rhs)
-    if n > m:
-        lhs, rhs = rhs, lhs
-        n, m = m, n
-
-    current_row = range(n + 1)
-    for i in range(1, m + 1):
-        previous_row, current_row = current_row, [i] + [0] * n
-        for j in range(1, n + 1):
-            add, delete, change = previous_row[j] + 1, current_row[j - 1] + 1, previous_row[j - 1]
-            if lhs[j - 1] != rhs[i - 1]:
-                change += 1
-            current_row[j] = min(add, delete, change)
-
-    return current_row[n]
 

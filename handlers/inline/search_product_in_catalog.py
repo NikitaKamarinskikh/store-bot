@@ -5,7 +5,6 @@ from db_api import products as products_model
 
 @dp.inline_handler()
 async def query(query: types.InlineQuery):
-    user_id = query.from_user.id
     product_name = query.query
     if not product_name:
         return
@@ -17,15 +16,15 @@ async def query(query: types.InlineQuery):
                 id=product.pk,
                 title=product.name,
                 input_message_content=types.InputTextMessageContent(
-                    message_text=product.name
-                )
+                    message_text=product.name,
+                ),
             )
         )
-
     await query.answer(
         results=results,
-        cache_time=5
+        cache_time=3
     )
+    
 
 
 
