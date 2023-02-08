@@ -155,6 +155,7 @@ async def add_product_to_basket(callback: types.CallbackQuery, callback_data: di
 async def get_product_quantity(message: types.Message, state: FSMContext):
     product_quantity = message.text
     if product_quantity.isdigit():
+        await state.update_data(product_quantity=int(product_quantity))
         await _add_product_to_basket(message, state)
     else:
         await message.answer('Количество товара должно быть указано числом')
@@ -164,9 +165,10 @@ async def _add_product_to_basket(message: types.Message, state: FSMContext) -> N
     state_data = await state.get_data()
     product_id = state_data.get('product_id')
     additional_products_list = state_data.get('additional_products_list')
+    product_quantity = state_data.get('product_quantity')
     additional_products_ids = _get_additional_products_ids_from_chosen_additional_products(additional_products_list, int(product_id))
 
-    basket.add(message.from_user.id, product_id, additional_products_ids)
+    basket.add(message.from_user.id, product_id, additional_products_ids, product_quantity)
 
     basket_info = basket.get_info(message.from_user.id)
     

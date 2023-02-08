@@ -12,6 +12,7 @@ from keyboards.inline.transport_companies import transport_companies_markup, tra
 from keyboards.default.get_back_mrkup import get_back_markup
 from keyboards.default.main_markup import main_markup
 from states.clients.make_order import MakeOrderStates, UpdateOrderStates
+from notifications.managers import notify_managers_about_new_order
 from config import OrderData
 
 
@@ -184,7 +185,7 @@ def _format_basket_products(basket_products: List[BasketProducts]) -> str:
     products_info = ''
     product_number= 1
     for basket_product in basket_products:
-        products_info += f'{product_number}. {basket_product.product.name} {basket_product.product.price} руб.\n'
+        products_info += f'{product_number} {basket_product.product.name} <i> {basket_product.product_quantity} шт. </i> {basket_product.product.price} руб.\n'
         additional_products = basket_product.additional_products
         for additional_product in additional_products.all():
             products_info += f'+ {additional_product.name} {additional_product.price} руб.\n'
@@ -203,10 +204,11 @@ async def confirm_order(callback: types.CallbackQuery, state: FSMContext):
     order_data.amount = current_basket_info.amount_in_rub
 
     order = orders_model.create(order_data)
-
+    basket_products = basket_model.get_products_by_client_telegram_id(callback.from_user.id)
+    order_info = f'Новый заказ\n{_format_basket_products(basket_products)}'
+    await notify_managers_about_new_order(order_info)
     basket_model.clear(callback.from_user.id)
 
-    basket_info = basket_model.get_info(callback.from_user.id)
 
     await callback.message.answer(
         f'Ваш заказ {order.pk} оформлен, скоро с вами свяжутся.',
