@@ -36,7 +36,7 @@ def get_info(client_telegram_id: int) -> BasketInfo:
     client = Clients.objects.get(telegram_id=client_telegram_id)
     client_products = BasketProducts.objects.filter(client=client)
     for product in client_products:
-        amount += product.product.price
+        amount += product.product.price * product.product_quantity
         for additional_product in product.additional_products.all():
             amount += additional_product.price
         products_quantity += 1

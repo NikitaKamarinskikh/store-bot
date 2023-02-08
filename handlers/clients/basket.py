@@ -209,7 +209,6 @@ async def confirm_order(callback: types.CallbackQuery, state: FSMContext):
     await notify_managers_about_new_order(order_info)
     basket_model.clear(callback.from_user.id)
 
-
     await callback.message.answer(
         f'Ваш заказ {order.pk} оформлен, скоро с вами свяжутся.',
         reply_markup=main_markup
