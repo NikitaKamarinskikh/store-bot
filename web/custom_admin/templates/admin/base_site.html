@@ -1,6 +1,16 @@
 {% extends "admin/base_site.html" %}
 
+
+{% load static %}
+
+{% block extrahead %}
+
+        <link rel="shortcut icon" href="{% static '/custom_admin/img/favicon.ico' %}" />
+
+{% endblock %}
+
 {% block branding %}
         <a href="/referral_program" class="">Настройки реферальной программы</a> /
         <a href="/admin">Админ панель</a>
 {% endblock %}
+

@@ -30,7 +30,7 @@ class Products(models.Model):
     subcategory = models.ForeignKey(Subcategories, verbose_name='Подкатегория', on_delete=models.CASCADE)
     description = models.TextField(verbose_name='Описание')
     sizes = models.CharField(verbose_name='Размеры', max_length=60, null=True, blank=True)
-    price = models.IntegerField(verbose_name='Цена')
+    price = models.PositiveIntegerField(verbose_name='Цена')
 
     def __str__(self) -> str:
         return self.name
