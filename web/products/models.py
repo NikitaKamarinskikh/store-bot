@@ -24,8 +24,24 @@ class Subcategories(models.Model):
         verbose_name_plural = 'Пдокатегории'
 
 
+class Products(models.Model):
+    name = models.CharField(verbose_name='Название', max_length=255)
+    category = models.ForeignKey(Categories, verbose_name='Категория', on_delete=models.CASCADE)
+    subcategory = models.ForeignKey(Subcategories, verbose_name='Подкатегория', on_delete=models.CASCADE)
+    description = models.TextField(verbose_name='Описание')
+    sizes = models.CharField(verbose_name='Размеры', max_length=60, null=True, blank=True)
+    price = models.IntegerField(verbose_name='Цена')
+
+    def __str__(self) -> str:
+        return self.name
+
+    class Meta:
+        verbose_name = 'Товар'
+        verbose_name_plural = 'Товары'
+
 
 class AdditionalProducts(models.Model):
+    product = models.ForeignKey(Products, verbose_name='Товар', on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(verbose_name='Название', max_length=255)
     price = models.PositiveIntegerField(verbose_name='Стоимость')
 
@@ -35,23 +51,6 @@ class AdditionalProducts(models.Model):
     class Meta:
         verbose_name = 'Дополнительный товар'
         verbose_name_plural= 'Дополнительные товары'
-
-
-class Products(models.Model):
-    name = models.CharField(verbose_name='Название', max_length=255)
-    category = models.ForeignKey(Categories, verbose_name='Категория', on_delete=models.CASCADE)
-    subcategory = models.ForeignKey(Subcategories, verbose_name='Подкатегория', on_delete=models.CASCADE)
-    description = models.TextField(verbose_name='Описание')
-    sizes = models.CharField(verbose_name='Размеры', max_length=60)
-    price = models.IntegerField(verbose_name='Цена')
-    additional_products = models.ManyToManyField(AdditionalProducts, verbose_name='Дополнительные опции', blank=True)
-
-    def __str__(self) -> str:
-        return self.name
-
-    class Meta:
-        verbose_name = 'Товар'
-        verbose_name_plural = 'Товары'
 
 
 class ProductImages(models.Model):

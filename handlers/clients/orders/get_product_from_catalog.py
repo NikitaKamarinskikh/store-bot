@@ -48,7 +48,7 @@ async def get_category(callback: types.CallbackQuery, callback_data: dict, state
 
 
 @dp.callback_query_handler(subcategories_callback.filter(), state=GetProductFromCatalogStates.get_subcategory)
-async def get_subcategory(callback: types.Message, callback_data: dict, state: FSMContext):
+async def get_subcategory(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     state_data = await state.get_data()
     category_id = state_data.get('category_id')
@@ -59,7 +59,8 @@ async def get_subcategory(callback: types.Message, callback_data: dict, state: F
     await state.update_data(products_ids_list=products_ids_list, additional_products_list=[])
     
     product = products[0]
-    markup = product_markups.chose_product_markup(product.pk, 0, product.additional_products.all(),len(products))
+    additional_products = products_model.get_additional_products_by_product_id(product.pk)
+    markup = product_markups.chose_product_markup(product.pk, 0, additional_products, len(products))
 
     product_images = products_model.get_product_images_by_product_id(product.pk)
     if product_images:
@@ -68,11 +69,11 @@ async def get_subcategory(callback: types.Message, callback_data: dict, state: F
         await state.update_data(images_id=images_id)
     else:
         await state.update_data(images_id=None)
-    r = await callback.message.answer(
+    response = await callback.message.answer(
         text=f'{product.name}\n{product.description}\n{product.price} руб.',
         reply_markup=markup
     )
-    await state.update_data(menu_message_id=r.message_id)
+    await state.update_data(menu_message_id=response.message_id)
     await GetProductFromCatalogStates.chose_product.set()
 
 
@@ -86,7 +87,9 @@ async def next_product(callback: types.CallbackQuery, callback_data: dict, state
     next_product_id = products_ids_list[index]
     product = products_model.get_product_by_id(next_product_id)
 
-    markup = product_markups.chose_product_markup(next_product_id, index, product.additional_products.all(), len(products_ids_list))
+    additional_products = products_model.get_additional_products_by_product_id(next_product_id)
+
+    markup = product_markups.chose_product_markup(next_product_id, index, additional_products, len(products_ids_list))
     product_images = products_model.get_product_images_by_product_id(product.pk)
     if images_id:
         for image_id in images_id:
@@ -103,11 +106,11 @@ async def next_product(callback: types.CallbackQuery, callback_data: dict, state
             chat_id=callback.from_user.id,
             message_id=menu_message_id
         )
-        r = await callback.message.answer(
+        response = await callback.message.answer(
             text=f'{product.name}\n{product.description}\n{product.price} руб.',
             reply_markup=markup
         )
-        await state.update_data(images_id=images_id, menu_message_id=r.message_id)
+        await state.update_data(images_id=images_id, menu_message_id=response.message_id)
     else:
         menu_message_id = state_data.get('menu_message_id')
         await bot.edit_message_text(

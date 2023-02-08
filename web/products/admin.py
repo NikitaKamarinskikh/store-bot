@@ -15,10 +15,22 @@ class ProductImagesinline(admin.StackedInline):
     extra = 0
 
 
+@admin.register(AdditionalProducts)
+class AdditionalProductsAdmin(admin.ModelAdmin):
+
+    class Meta:
+        model = AdditionalProducts
+
+
+class AdditionalProductsInline(admin.StackedInline):
+    model = AdditionalProducts
+    extra = 0
+
+
 @admin.register(Products)
 class ProductsAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'subcategory', 'price')
-    inlines = [ProductImagesinline]
+    inlines = [ProductImagesinline, AdditionalProductsInline]
 
     class Meta:
         model = Products
@@ -37,11 +49,5 @@ class SubcategoriesAdmin(admin.ModelAdmin):
     class Meta:
         model = Subcategories
 
-
-@admin.register(AdditionalProducts)
-class AdditionalProductsAdmin(admin.ModelAdmin):
-
-    class Meta:
-        model = AdditionalProducts
 
 
