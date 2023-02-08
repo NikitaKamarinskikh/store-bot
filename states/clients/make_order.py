@@ -27,6 +27,7 @@ class GetProductFromCatalogStates(StatesGroup):
     get_category = State()
     get_subcategory = State()
     chose_product = State()
+    get_product_quantity = State()
 
 
 class UpdateOrderStates(StatesGroup):

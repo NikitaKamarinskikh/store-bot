@@ -18,8 +18,14 @@ from messages_texts import GET_BACK_MESSAGE_TEXT, CATALOG_MESSAGE_TEXT
 @dp.message_handler(text=GET_BACK_MESSAGE_TEXT,
                     state=[GetProductFromCatalogStates.get_category,
                            GetProductFromCatalogStates.get_subcategory,
-                           GetProductFromCatalogStates.chose_product])
+                           GetProductFromCatalogStates.chose_product,
+                           GetProductFromCatalogStates.get_product_quantity
+                           ])
 async def get_back(message: types.Message, state: FSMContext):
+    """
+    TODO:
+        - must be refactored
+    """
     current_state = await state.get_state()
     basket_info = basket.get_info(message.from_user.id)
     if current_state == 'GetProductFromCatalogStates:get_category':
@@ -31,6 +37,8 @@ async def get_back(message: types.Message, state: FSMContext):
     elif current_state == 'GetProductFromCatalogStates:get_subcategory':
         await _ask_category(message)
     elif current_state == 'GetProductFromCatalogStates:chose_product':
+        await _ask_subcategory(message, state)
+    elif current_state == 'GetProductFromCatalogStates:get_product_quantity':
         await _ask_subcategory(message, state)
 
 
@@ -135,24 +143,42 @@ async def add_additional_product(callback: types.CallbackQuery, callback_data: d
     await callback.message.answer('Дополнительный товар успешно добавлен')
 
 
-
 @dp.callback_query_handler(product_markups.add_product_to_basket_callback.filter(), state=GetProductFromCatalogStates.chose_product)
 async def add_product_to_basket(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     product_id = callback_data.get('product_id')
+    await state.update_data(product_id=product_id)
+    await _ask_product_quantity(callback.message)
 
+
+@dp.message_handler(state=GetProductFromCatalogStates.get_product_quantity)
+async def get_product_quantity(message: types.Message, state: FSMContext):
+    product_quantity = message.text
+    if product_quantity.isdigit():
+        await _add_product_to_basket(message, state)
+    else:
+        await message.answer('Количество товара должно быть указано числом')
+
+
+async def _add_product_to_basket(message: types.Message, state: FSMContext) -> None:
     state_data = await state.get_data()
+    product_id = state_data.get('product_id')
     additional_products_list = state_data.get('additional_products_list')
     additional_products_ids = _get_additional_products_ids_from_chosen_additional_products(additional_products_list, int(product_id))
 
-    basket.add(callback.from_user.id, product_id, additional_products_ids)
+    basket.add(message.from_user.id, product_id, additional_products_ids)
 
-    basket_info = basket.get_info(callback.from_user.id)
-
-    await callback.message.answer(
+    basket_info = basket.get_info(message.from_user.id)
+    
+    await message.answer(
         f'Товар успешно добавлен в корзину',
         reply_markup=get_product_from_catalog_markup(basket_info.as_string())
     )
+
+
+async def _ask_product_quantity(message: types.Message) -> None:
+    await message.answer('Укажите количество товара')
+    await GetProductFromCatalogStates.get_product_quantity.set()
 
 
 def _get_additional_products_ids_from_chosen_additional_products(additional_products: List[Tuple[int, int]], product_id: int) -> List[int]:
@@ -193,9 +219,6 @@ async def _ask_subcategory(message: types.Message, state: FSMContext) -> None:
         reply_markup=subcategories_markup(subcategories)
     )
     await GetProductFromCatalogStates.get_subcategory.set()
-
-
-
 
 
 

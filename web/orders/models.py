@@ -56,6 +56,7 @@ class Orders(models.Model):
 class OrderProducts(models.Model):
     order = models.ForeignKey(Orders, verbose_name='Заказ', on_delete=models.CASCADE, null=True)
     product = models.ForeignKey(Products, verbose_name='Товар', on_delete=models.CASCADE)
+    product_quantoty = models.IntegerField(verbose_name='Количество', default=0)
     additional_products = models.ManyToManyField(AdditionalProducts, verbose_name='Дополнительные товары', blank=True)
 
     def __str__(self) -> str:
