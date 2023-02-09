@@ -36,6 +36,24 @@ def products_pair_markup(products: List[Products]) -> InlineKeyboardMarkup:
     return markup
 
 
+def add_product_to_basket_markup(product_id: int, additional_products: List[AdditionalProducts]) -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup(row_width=2)
+    for additional_product in additional_products:
+        markup.insert(
+            InlineKeyboardButton(
+                text=additional_product.name,
+                callback_data=additional_product_callback.new(additional_product.pk, product_id)
+            )
+        )
+    markup.add(
+        InlineKeyboardButton(
+            text='Добавить в корзину',
+            callback_data=add_product_to_basket_callback.new(product_id)
+        )
+    )
+    return markup
+
+
 def chose_product_markup(product_id: int, current_product_index: int,
                          additional_products: List[AdditionalProducts],
                          products_quantity: int) -> InlineKeyboardMarkup:

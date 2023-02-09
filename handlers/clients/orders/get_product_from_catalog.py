@@ -4,7 +4,7 @@ from aiogram.dispatcher import FSMContext
 from main import dp, bot
 from messages_texts import OrdersMessagesText
 from keyboards.inline.product_markups import categories_markup, categories_callback,\
-    subcategories_markup, subcategories_callback, products_pair_markup, products_pair_callback
+    subcategories_markup, subcategories_callback, products_pair_markup, products_pair_callback, add_product_to_basket_markup
 from keyboards.default.products_markups import get_product_from_catalog_markup
 from keyboards.default.make_order_markup import make_order_markup
 from states.clients.make_order import GetProductFromCatalogStates
@@ -107,7 +107,6 @@ async def get_subcategory(callback: types.CallbackQuery, callback_data: dict, st
     await _send_product_pairs(callback.message, state)
     return
 
-
     products_ids_list = [product.pk for product in products]
     await state.update_data(products_ids_list=products_ids_list, additional_products_list=[])
     
@@ -128,6 +127,24 @@ async def get_subcategory(callback: types.CallbackQuery, callback_data: dict, st
     )
     await state.update_data(menu_message_id=response.message_id)
     await GetProductFromCatalogStates.chose_product.set()
+
+
+@dp.callback_query_handler(products_pair_callback.filter(), state='*')
+async def show_product_info(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    await callback.answer()
+    product_id = callback_data.get('product_id')
+    additional_products = products_model.get_additional_products_by_product_id(product_id)
+    product = products_model.get_product_by_id(product_id)
+    product_images = products_model.get_product_images_by_product_id(product.pk)
+    await state.update_data(additional_products_list=[])
+    if product_images:
+        album = _collect_image_files_to_media_group(product_images)
+        await callback.message.answer_media_group(album)
+
+    await callback.message.answer(
+        text=f'{product.name}\n{product.description}\n{product.price} руб.',
+        reply_markup=add_product_to_basket_markup(product_id, additional_products)
+    )
 
 
 @dp.callback_query_handler(product_markups.next_product_callback.filter(), state=GetProductFromCatalogStates.chose_product)
@@ -174,7 +191,7 @@ async def next_product(callback: types.CallbackQuery, callback_data: dict, state
         )
 
 
-@dp.callback_query_handler(product_markups.additional_product_callback.filter(), state=GetProductFromCatalogStates.chose_product)
+@dp.callback_query_handler(product_markups.additional_product_callback.filter(), state='*')
 async def add_additional_product(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     state_data = await state.get_data()
@@ -188,7 +205,7 @@ async def add_additional_product(callback: types.CallbackQuery, callback_data: d
     await callback.message.answer('Дополнительный товар успешно добавлен')
 
 
-@dp.callback_query_handler(product_markups.add_product_to_basket_callback.filter(), state=GetProductFromCatalogStates.chose_product)
+@dp.callback_query_handler(product_markups.add_product_to_basket_callback.filter(), state='*')
 async def add_product_to_basket(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     product_id = callback_data.get('product_id')
@@ -229,6 +246,8 @@ async def _ask_product_quantity(message: types.Message) -> None:
 
 
 def _get_additional_products_ids_from_chosen_additional_products(additional_products: List[Tuple[int, int]], product_id: int) -> List[int]:
+    if not additional_products:
+        return []
     additional_products_ids = list()
     for item in additional_products:
         if item[0] == product_id:
