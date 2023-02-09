@@ -105,28 +105,6 @@ async def get_subcategory(callback: types.CallbackQuery, callback_data: dict, st
     print(products_pairs)
     await state.update_data(products_pairs=products_pairs)
     await _send_product_pairs(callback.message, state)
-    return
-
-    products_ids_list = [product.pk for product in products]
-    await state.update_data(products_ids_list=products_ids_list, additional_products_list=[])
-    
-    product = products[0]
-    additional_products = products_model.get_additional_products_by_product_id(product.pk)
-    markup = product_markups.chose_product_markup(product.pk, 0, additional_products, len(products))
-
-    product_images = products_model.get_product_images_by_product_id(product.pk)
-    if product_images:
-        album = _collect_image_files_to_media_group(product_images)
-        images_id = await callback.message.answer_media_group(album)
-        await state.update_data(images_id=images_id)
-    else:
-        await state.update_data(images_id=None)
-    response = await callback.message.answer(
-        text=f'{product.name}\n{product.description}\n{product.price} руб.',
-        reply_markup=markup
-    )
-    await state.update_data(menu_message_id=response.message_id)
-    await GetProductFromCatalogStates.chose_product.set()
 
 
 @dp.callback_query_handler(products_pair_callback.filter(), state='*')
@@ -198,11 +176,19 @@ async def add_additional_product(callback: types.CallbackQuery, callback_data: d
     id = callback_data.get('id')
     product_id = callback_data.get('product_id')
     additional_products_list = state_data.get('additional_products_list')
+    if additional_products_list is None:
+        additional_products_list = []
     additional_products_list.append(
         (int(product_id), int(id))
     )
     await state.update_data(additional_products_list=additional_products_list)
-    await callback.message.answer('Дополнительный товар успешно добавлен')
+    if callback.message is not None:
+        await callback.message.answer('Дополнительный товар успешно добавлен')
+    else: # Request from inline mode
+        await bot.send_message(
+            chat_id=callback.from_user.id,
+            text='Дополнительный товар успешно добавлен'
+        )
 
 
 @dp.callback_query_handler(product_markups.add_product_to_basket_callback.filter(), state='*')
@@ -210,7 +196,14 @@ async def add_product_to_basket(callback: types.CallbackQuery, callback_data: di
     await callback.answer()
     product_id = callback_data.get('product_id')
     await state.update_data(product_id=product_id)
-    await _ask_product_quantity(callback.message)
+    if callback.message is not None:
+        await _ask_product_quantity(callback.message)
+    else: # Request from inline mode
+        await bot.send_message(
+            chat_id=callback.from_user.id,
+            text='Укажите количество товара'
+        )
+        await GetProductFromCatalogStates.get_product_quantity.set()
 
 
 @dp.message_handler(state=GetProductFromCatalogStates.get_product_quantity)
