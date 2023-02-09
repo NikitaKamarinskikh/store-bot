@@ -1,4 +1,4 @@
-from  typing import List
+from  typing import List, Union
 from web.products.models import Categories, Subcategories, Products, ProductImages, AdditionalProducts
 
 
@@ -25,6 +25,20 @@ def get_products_by_category_and_subcategory(category_id: int, subcategory_id: i
     return Products.objects.filter(category=category, subcategory=subcategory)
 
 
+def get_products_by_category_or_category_and_subcategory(category_id: int, subcategory_id: int = None) -> List[Products]:
+    filtered_products = []
+    category = Categories.objects.get(pk=category_id)
+    subcategory = Subcategories.objects.get(pk=subcategory_id)
+    products = Products.objects.filter(category=category)
+    for product in products:
+        if product.subcategory is not None:
+            if product.subcategory == subcategory:
+                filtered_products.append(product)
+        else:
+            filtered_products.append(product)
+    return filtered_products
+
+
 def get_product_by_id(product_id: int) -> Products:
     return Products.objects.get(pk=product_id)
 
@@ -49,5 +63,10 @@ def get_products_by_name_pattern(pattern: str) -> List[Products]:
     if product.name[0: len(pattern)].lower() == pattern.lower()]
     return filtered_products
 
+
+def get_first_image(product_id: str):
+    product = Products.objects.get(pk=product_id)
+    images = ProductImages.objects.filter(product=product)
+    return images.first()
 
 

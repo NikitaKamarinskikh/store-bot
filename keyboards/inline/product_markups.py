@@ -13,6 +13,8 @@ add_product_to_basket_callback = CallbackData('chosen_product', 'product_id')
 next_product_callback = CallbackData('next_product', 'index')
 additional_product_callback = CallbackData('additional_product', 'id', 'product_id')
 
+products_pair_callback = CallbackData('products_pair', 'product_id')
+
 
 def categories_markup(categories: List[Categories]) -> InlineKeyboardMarkup:
     return _create_markup(categories, categories_callback)
@@ -20,6 +22,18 @@ def categories_markup(categories: List[Categories]) -> InlineKeyboardMarkup:
 
 def subcategories_markup(subcategories: List[Subcategories]) -> InlineKeyboardMarkup:
     return _create_markup(subcategories, subcategories_callback)
+
+
+def products_pair_markup(products: List[Products]) -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup(row_width=2)
+    for product in products:
+        markup.insert(
+            InlineKeyboardButton(
+                text=product.name,
+                callback_data=products_pair_callback.new(product.pk)
+            )
+        )
+    return markup
 
 
 def chose_product_markup(product_id: int, current_product_index: int,

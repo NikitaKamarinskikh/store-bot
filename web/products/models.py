@@ -21,13 +21,13 @@ class Subcategories(models.Model):
 
     class Meta:
         verbose_name = 'Подкатегория'
-        verbose_name_plural = 'Пдокатегории'
+        verbose_name_plural = 'Подкатегории'
 
 
 class Products(models.Model):
     name = models.CharField(verbose_name='Название', max_length=255)
     category = models.ForeignKey(Categories, verbose_name='Категория', on_delete=models.CASCADE)
-    subcategory = models.ForeignKey(Subcategories, verbose_name='Подкатегория', on_delete=models.CASCADE)
+    subcategory = models.ForeignKey(Subcategories, verbose_name='Подкатегория', on_delete=models.CASCADE, null=True, blank=True)
     description = models.TextField(verbose_name='Описание')
     sizes = models.CharField(verbose_name='Размеры', max_length=60, null=True, blank=True)
     price = models.PositiveIntegerField(verbose_name='Цена')

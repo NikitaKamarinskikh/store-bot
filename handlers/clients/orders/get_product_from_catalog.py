@@ -4,7 +4,7 @@ from aiogram.dispatcher import FSMContext
 from main import dp, bot
 from messages_texts import OrdersMessagesText
 from keyboards.inline.product_markups import categories_markup, categories_callback,\
-    subcategories_markup, subcategories_callback
+    subcategories_markup, subcategories_callback, products_pair_markup, products_pair_callback
 from keyboards.default.products_markups import get_product_from_catalog_markup
 from keyboards.default.make_order_markup import make_order_markup
 from states.clients.make_order import GetProductFromCatalogStates
@@ -55,13 +55,58 @@ async def get_category(callback: types.CallbackQuery, callback_data: dict, state
     await _ask_subcategory(callback.message, state)
 
 
+async def _get_photo_album(images_file_telegram_id: list) -> types.MediaGroup():
+    if images_file_telegram_id[0] is None and images_file_telegram_id[1] is None:
+        return None
+    album = types.MediaGroup()
+    for product_image_telegram_id in images_file_telegram_id:
+        if product_image_telegram_id is not None:
+            album.attach_photo(product_image_telegram_id.telegram_id)
+    return album
+
+
+async def _send_product_pairs(message: types.Message, state: FSMContext) -> None:
+    state_data = await state.get_data()
+    products_pairs = state_data.get('products_pairs')
+    for pair in products_pairs:
+        if len(pair) == 2:
+            first_product = pair[0]
+            second_product = pair[1]
+            first_product_image = products_model.get_first_image(first_product.pk)
+            second_product_image = products_model.get_first_image(second_product.pk)
+            album = await _get_photo_album([first_product_image, second_product_image])
+            if album is not None:
+                await message.answer_media_group(album)
+            await message.answer(
+                f'{first_product.name} {second_product.name}',
+                reply_markup=products_pair_markup([first_product, second_product])
+            )
+        else:
+            first_product = pair[0]
+            first_product_image = products_model.get_first_image(first_product.pk)
+            if album is not None:
+                await message.answer_media_group(album)
+            await message.answer(
+                f'{first_product.name}',
+                reply_markup=products_pair_markup([first_product])
+            )
+
+
 @dp.callback_query_handler(subcategories_callback.filter(), state=GetProductFromCatalogStates.get_subcategory)
 async def get_subcategory(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     state_data = await state.get_data()
     category_id = state_data.get('category_id')
     subcategory_id = callback_data.get('id')
-    products = products_model.get_products_by_category_and_subcategory(category_id, subcategory_id)
+    
+    products = products_model.get_products_by_category_or_category_and_subcategory(category_id, subcategory_id)
+    print(products)
+    products_pairs = [products[d:d+2] for d in range(0, len(products), 2)] # _make_pairs(products)
+    print(products_pairs)
+    await state.update_data(products_pairs=products_pairs)
+    await _send_product_pairs(callback.message, state)
+    return
+
 
     products_ids_list = [product.pk for product in products]
     await state.update_data(products_ids_list=products_ids_list, additional_products_list=[])
