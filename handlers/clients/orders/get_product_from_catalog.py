@@ -28,6 +28,15 @@ async def get_back(message: types.Message, state: FSMContext):
     """
     current_state = await state.get_state()
     basket_info = basket.get_info(message.from_user.id)
+    state_data = await state.get_data()
+    category_id = state_data.get('category_id')
+    if category_id is None:
+        await message.answer(
+            CATALOG_MESSAGE_TEXT,
+            reply_markup=make_order_markup(basket_info.as_string())
+        )
+        await state.finish()
+        return
     if current_state == 'GetProductFromCatalogStates:get_category':
         await message.answer(
             CATALOG_MESSAGE_TEXT,
@@ -67,7 +76,9 @@ async def _get_photo_album(images_file_telegram_id: list) -> types.MediaGroup():
 
 async def _send_product_pairs(message: types.Message, state: FSMContext) -> None:
     state_data = await state.get_data()
+    last_pair_number = int(state_data.get('last_pair_number'))
     products_pairs = state_data.get('products_pairs')
+    products_pairs = products_pairs[last_pair_number - 4: last_pair_number]
     for pair in products_pairs:
         if len(pair) == 2:
             first_product = pair[0]
@@ -84,6 +95,7 @@ async def _send_product_pairs(message: types.Message, state: FSMContext) -> None
         else:
             first_product = pair[0]
             first_product_image = products_model.get_first_image(first_product.pk)
+            album = await _get_photo_album([first_product_image, None])
             if album is not None:
                 await message.answer_media_group(album)
             await message.answer(
@@ -100,10 +112,9 @@ async def get_subcategory(callback: types.CallbackQuery, callback_data: dict, st
     subcategory_id = callback_data.get('id')
     
     products = products_model.get_products_by_category_or_category_and_subcategory(category_id, subcategory_id)
-    print(products)
     products_pairs = [products[d:d+2] for d in range(0, len(products), 2)] # _make_pairs(products)
-    print(products_pairs)
-    await state.update_data(products_pairs=products_pairs)
+    
+    await state.update_data(products_pairs=products_pairs, last_pair_number=4)
     await _send_product_pairs(callback.message, state)
 
 
