@@ -21,7 +21,7 @@ class Subcategories(models.Model):
 
     class Meta:
         verbose_name = 'Подкатегория'
-        verbose_name_plural = 'Пдокатегории'
+        verbose_name_plural = 'Подкатегории'
 
 
 class Products(models.Model):
