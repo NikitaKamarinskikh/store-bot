@@ -10,7 +10,7 @@ from keyboards.inline.orders_markups import make_order_markup, make_order_callba
     update_order_points_markup, update_order_point_callback
 from keyboards.inline.transport_companies import transport_companies_markup, transport_companies_callback
 from keyboards.default.get_back_mrkup import get_back_markup
-from keyboards.default.main_markup import main_markup
+from keyboards.default.main_markup import create_main_markup
 from states.clients.make_order import MakeOrderStates, UpdateOrderStates
 from notifications.managers import notify_managers_about_new_order
 from config import OrderData
@@ -27,9 +27,10 @@ from config import OrderData
 async def get_back(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
     if current_state == 'MakeOrderStates:get_recipient_full_name':
+        basket_info = basket_model.get_info(message.from_user.id)
         await message.answer(
             MAIN_MENU_TEXT,
-            reply_markup=main_markup
+            reply_markup=create_main_markup(basket_info)
         )
         await state.finish()
     elif current_state == 'MakeOrderStates:get_recipient_phone_number':
@@ -211,7 +212,7 @@ async def confirm_order(callback: types.CallbackQuery, state: FSMContext):
 
     await callback.message.answer(
         f'Ваш заказ {order.pk} оформлен, скоро с вами свяжутся.',
-        reply_markup=main_markup
+        reply_markup=create_main_markup()
     )
     await state.finish()
 

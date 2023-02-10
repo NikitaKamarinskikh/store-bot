@@ -2,7 +2,8 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from messages_texts import OrdersMessagesText
 from states.clients.make_order import WholesaleOrder
-from keyboards.default.main_markup import main_markup
+from keyboards.default.main_markup import create_main_markup
+from db_api import basket as basket_model
 from main import dp
 from notifications.managers import notify_managers_about_wholesale_order
 
@@ -37,9 +38,10 @@ async def get_phone_number(message: types.Message, state:FSMContext):
     state_data = await state.get_data()
     text = f'Новый запрос на оптовый заказ\nОписание: {state_data.get("product_description")}\nФИО: {state_data.get("client_full_name")}\nТелефон: {phone_number}'
     await notify_managers_about_wholesale_order(text)
+    baslet_info = basket_model.get_info(message.from_user.id)
     await message.answer(
         'Данные успешно отправлены менеджеру',
-        reply_markup=main_markup
+        reply_markup=create_main_markup(baslet_info)
     )
     await state.finish()
 

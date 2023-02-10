@@ -69,6 +69,12 @@ class BasketInfo:
     products_quantity: int = 0
     amount_in_rub: int = 0
 
+    def is_empty(self) -> bool:
+        return self.products_quantity == 0 and self.amount_in_rub == 0
+    
+    def has_products(self) -> bool:
+        return self.products_quantity != 0
+
     def as_string(self) -> str:
         return f'Корзина - ({self.products_quantity}) - {self.amount_in_rub} руб.'
 

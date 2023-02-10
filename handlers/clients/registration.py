@@ -4,10 +4,10 @@ from aiogram.dispatcher.filters.builtin import CommandStart
 from main import dp
 from config import PRIVACY_POLICY_FILE_TELEGRAM_ID
 from keyboards.default.one_button_markup import one_button_markup
-from keyboards.default.main_markup import main_markup
+from keyboards.default.main_markup import create_main_markup
 from states.clients.registration import ClientRegistrationStates
 from messages_texts import RegistrationMessagesTexts,MAIN_MENU_TEXT
-from db_api import clients
+from db_api import clients, basket as basket_model
 from notifications import client_notification
 from referral_program.referral_program import load_referral_program_settings_from_json_file
 
@@ -27,11 +27,11 @@ async def start(message: types.Message, state: FSMContext):
         if message_args.isdigit():  # Приведен пользователем
             referrer_telegram_id = message_args
         await state.update_data(referrer_telegram_id=referrer_telegram_id)
-
     else:
+        basket_info = basket_model.get_info(message.from_user.id)
         await message.answer(
             'Вы уже зарегистрированы в боте',
-            reply_markup=main_markup
+            reply_markup=create_main_markup(basket_info)
         )
 
 
@@ -52,7 +52,7 @@ async def accept_privacy_policy(message: types.Message, state: FSMContext):
     await _register_client(message, state)
     await message.answer(
         MAIN_MENU_TEXT,
-        reply_markup=main_markup
+        reply_markup=create_main_markup()
     )
 
     await state.finish()
