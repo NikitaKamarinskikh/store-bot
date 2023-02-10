@@ -10,7 +10,6 @@ async def query(query: types.InlineQuery):
     if not product_name:
         return
     products = products_model.get_products_by_name_pattern(product_name)
-    print(products)
     results = []
     for product in products:
         additional_products = products_model.get_additional_products_by_product_id(product.pk)
@@ -20,10 +19,10 @@ async def query(query: types.InlineQuery):
                 id=product.pk,
                 title=product.name,
                 input_message_content=types.InputTextMessageContent(
-                    message_text=product.name,
+                    message_text=f'{product.name} {product.description}',
                 ),
                 reply_markup=add_product_to_basket_markup(product.pk, additional_products)
-            )
+            ),
         )
         if image is not None:
             results.append(
