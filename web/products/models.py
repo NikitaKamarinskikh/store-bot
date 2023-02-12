@@ -31,6 +31,7 @@ class Products(models.Model):
     description = models.TextField(verbose_name='Описание')
     sizes = models.CharField(verbose_name='Размеры', max_length=60, null=True, blank=True)
     price = models.PositiveIntegerField(verbose_name='Цена')
+    preview_url = models.ImageField(verbose_name='Превью для инлайн поиска', null=True, blank=True)
 
     def __str__(self) -> str:
         return self.name
