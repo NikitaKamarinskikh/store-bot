@@ -14,7 +14,7 @@ PRODUCT_INFO_BUTTON_TEXT = 'Подробнее'
 categories_callback = CallbackData('categories', 'id')
 subcategories_callback = CallbackData('subcategories', 'id')
 add_product_to_basket_callback = CallbackData('chosen_product', 'product_id')
-next_product_callback = CallbackData('next_product', 'index')
+next_product_callback = CallbackData('next_product', 'next_product_index')
 additional_product_callback = CallbackData('additional_product', 'id', 'product_id')
 products_pair_callback = CallbackData('products_pair', 'product_id')
 product_info_callback = CallbackData('product_info', 'product_id')
@@ -70,20 +70,12 @@ def add_product_to_basket_markup(product_id: int, additional_products: List[Addi
 
 
 def chose_product_markup(product_id: int, current_product_index: int,
-                         additional_products: List[AdditionalProducts],
                          products_quantity: int) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup(row_width=2)
-    for additional_product in additional_products:
-        markup.insert(
-            InlineKeyboardButton(
-                text=additional_product.name,
-                callback_data=additional_product_callback.new(additional_product.pk, product_id)
-            )
-        )
     markup.add(
         InlineKeyboardButton(
-            text=ADD_PRODUCT_TO_BASKET_BUTTON_TEXT,
-            callback_data=add_product_to_basket_callback.new(product_id)
+            text=PRODUCT_INFO_BUTTON_TEXT,
+            callback_data=product_info_callback.new(product_id)
         )
     )
     if current_product_index == 0:

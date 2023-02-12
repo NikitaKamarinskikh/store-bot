@@ -1,6 +1,7 @@
 from typing import List, Tuple
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from web.products.models import Products
 from main import dp, bot
 from messages_texts import OrdersMessagesText
 from keyboards.inline.product_markups import categories_markup, categories_callback,\
@@ -64,120 +65,62 @@ async def get_category(callback: types.CallbackQuery, callback_data: dict, state
     await _ask_subcategory(callback.message, state)
 
 
-async def _get_photo_album(images_file_telegram_id: list) -> types.MediaGroup():
-    if images_file_telegram_id[0] is None and images_file_telegram_id[1] is None:
-        return None
-    album = types.MediaGroup()
-    for product_image_telegram_id in images_file_telegram_id:
-        if product_image_telegram_id is not None:
-            album.attach_photo(product_image_telegram_id.telegram_id)
-    return album
-
-
-async def _send_product_pairs(message: types.Message, state: FSMContext) -> None:
-    state_data = await state.get_data()
-    last_pair_number = int(state_data.get('last_pair_number'))
-    products_pairs = state_data.get('products_pairs')
-    products_pairs = products_pairs[last_pair_number - 4: last_pair_number]
-    for pair in products_pairs:
-        if len(pair) == 2:
-            first_product = pair[0]
-            second_product = pair[1]
-            first_product_image = products_model.get_first_image(first_product.pk)
-            second_product_image = products_model.get_first_image(second_product.pk)
-            album = await _get_photo_album([first_product_image, second_product_image])
-            if album is not None:
-                await message.answer_media_group(album)
-            await message.answer(
-                f'{first_product.name} {second_product.name}',
-                reply_markup=products_pair_markup([first_product, second_product])
-            )
-        else:
-            first_product = pair[0]
-            first_product_image = products_model.get_first_image(first_product.pk)
-            album = await _get_photo_album([first_product_image, None])
-            if album is not None:
-                await message.answer_media_group(album)
-            await message.answer(
-                f'{first_product.name}',
-                reply_markup=products_pair_markup([first_product])
-            )
-
-
 @dp.callback_query_handler(subcategories_callback.filter(), state=GetProductFromCatalogStates.get_subcategory)
 async def get_subcategory(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
-    state_data = await state.get_data()
-    category_id = state_data.get('category_id')
-    subcategory_id = callback_data.get('id')
-    
-    products = products_model.get_products_by_category_or_category_and_subcategory(category_id, subcategory_id)
-    products_pairs = [products[d:d+2] for d in range(0, len(products), 2)] # _make_pairs(products)
-    
-    await state.update_data(products_pairs=products_pairs, last_pair_number=4)
-    await _send_product_pairs(callback.message, state)
-
-
-@dp.callback_query_handler(products_pair_callback.filter(), state='*')
-async def show_product_info(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
-    await callback.answer()
-    product_id = callback_data.get('product_id')
-    additional_products = products_model.get_additional_products_by_product_id(product_id)
-    product = products_model.get_product_by_id(product_id)
-    product_images = products_model.get_product_images_by_product_id(product.pk)
-    await state.update_data(additional_products_list=[])
-    if product_images:
-        album = _collect_image_files_to_media_group(product_images)
-        await callback.message.answer_media_group(album)
-
-    await callback.message.answer(
-        text=f'{product.name}\n{product.description}\n{product.price} руб.',
-        reply_markup=add_product_to_basket_markup(product_id, additional_products)
-    )
+    await state.update_data(subcategory_id=callback_data.get('id'), current_product_index=0)
+    await _show_product(callback, state)
+    await GetProductFromCatalogStates.chose_product.set()
 
 
 @dp.callback_query_handler(product_markups.next_product_callback.filter(), state=GetProductFromCatalogStates.chose_product)
 async def next_product(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
-    index = int(callback_data.get('index'))
+    next_product_index = int(callback_data.get('next_product_index'))
+    await state.update_data(current_product_index=next_product_index)
+    await _show_product(callback, state)
+
+
+async def _show_product(callback: types.CallbackQuery, state: FSMContext) -> None:
     state_data = await state.get_data()
-    products_ids_list = state_data.get('products_ids_list')
+    category_id = state_data.get('category_id')
+    subcategory_id = state_data.get('subcategory_id')
+    current_product_index = state_data.get('current_product_index')
     images_id = state_data.get('images_id')
-    next_product_id = products_ids_list[index]
-    product = products_model.get_product_by_id(next_product_id)
+    products = products_model.get_products_by_category_or_category_and_subcategory(category_id, subcategory_id)
+    product = products[current_product_index]
+    product_image = products_model.get_first_image(product.pk)
 
-    additional_products = products_model.get_additional_products_by_product_id(next_product_id)
-
-    markup = product_markups.chose_product_markup(next_product_id, index, additional_products, len(products_ids_list))
-    product_images = products_model.get_product_images_by_product_id(product.pk)
-    if images_id:
+    if images_id is not None:
         for image_id in images_id:
             await bot.delete_message(
                 chat_id=callback.from_user.id,
                 message_id=image_id.message_id
             )
-        await state.update_data(images_id=None)
-    if product_images:
-        album = _collect_image_files_to_media_group(product_images)
-        images_id = await callback.message.answer_media_group(album)
-        menu_message_id = state_data.get('menu_message_id')
-        await bot.delete_message(
-            chat_id=callback.from_user.id,
-            message_id=menu_message_id
-        )
-        response = await callback.message.answer(
-            text=f'{product.name}\n{product.description}\n{product.price} руб.',
-            reply_markup=markup
-        )
-        await state.update_data(images_id=images_id, menu_message_id=response.message_id)
+            await state.update_data(images_id=None)
+    await callback.message.delete()
+
+    if product_image is not None:
+        album = _image_to_album(product_image)
+        images_id = await callback.message.answer_media_group(media=album)
+        await state.update_data(images_id=images_id)
     else:
-        menu_message_id = state_data.get('menu_message_id')
-        await bot.edit_message_text(
-            chat_id=callback.from_user.id,
-            message_id=menu_message_id,
-            text=f'{product.name}\n{product.description}\n{product.price} руб.',
-            reply_markup=markup
+        await state.update_data(images_id=None)
+
+    await callback.message.answer(
+        product.name,
+        reply_markup=product_markups.chose_product_markup(
+            product.pk,
+            current_product_index,
+            len(products)
         )
+    )
+
+
+def _image_to_album(image: ProductImages) -> types.MediaGroup:
+    album = types.MediaGroup()
+    album.attach_photo(image.telegram_id)
+    return album
 
 
 @dp.callback_query_handler(product_markups.additional_product_callback.filter(), state='*')

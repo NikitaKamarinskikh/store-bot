@@ -6,7 +6,7 @@ from keyboards.inline.product_markups import product_info_callback, add_product_
 from db_api import products as products_model
 
 
-@dp.callback_query_handler(product_info_callback.filter())
+@dp.callback_query_handler(product_info_callback.filter(), state='*')
 async def show_product_info(callback: types.CallbackQuery, callback_data: dict):
     await callback.answer()
     product_id = callback_data.get('product_id')
