@@ -10,13 +10,17 @@ from main import bot
 
 async def check_mailing():
     mailings = MailingLists.objects.all()
-    current_time = datetime.now().replace(second=0, microsecond=0)
     for mailing in mailings:
-        mailing_sending_time = mailing.sending_time.replace(second=0, microsecond=0) + timedelta(hours=3)
-        mailing_sending_time = mailing_sending_time.replace(tzinfo=None)
-        if mailing_sending_time == current_time:
-            await _exec_mainling(mailing)
-            mailing.delete()
+        await _process_mailing(mailing)
+
+
+async def _process_mailing(mailing: MailingLists) -> None:
+    current_time = datetime.now().replace(second=0, microsecond=0)
+    mailing_sending_time = mailing.sending_time.replace(second=0, microsecond=0) + timedelta(hours=3)
+    mailing_sending_time = mailing_sending_time.replace(tzinfo=None)
+    if mailing_sending_time == current_time:
+        await _exec_mainling(mailing)
+        mailing.delete()
 
 
 async def _exec_mainling(mailing: MailingLists) -> None:
