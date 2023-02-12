@@ -4,16 +4,31 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 from web.products.models import Categories, Subcategories, Products, AdditionalProducts
 
+
 NEXT_PRODUCT_BUTTON_LABEL = '>>'
 PREVIOUS_PRODUCT_BUTTON_LABEL = '<<'
+ADD_PRODUCT_TO_BASKET_BUTTON_TEXT = 'Добавить в корзину'
+PRODUCT_INFO_BUTTON_TEXT = 'Подробнее'
+
 
 categories_callback = CallbackData('categories', 'id')
 subcategories_callback = CallbackData('subcategories', 'id')
 add_product_to_basket_callback = CallbackData('chosen_product', 'product_id')
 next_product_callback = CallbackData('next_product', 'index')
 additional_product_callback = CallbackData('additional_product', 'id', 'product_id')
-
 products_pair_callback = CallbackData('products_pair', 'product_id')
+product_info_callback = CallbackData('product_info', 'product_id')
+
+
+def product_info_markup(product_id: int) -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup()
+    markup.add(
+        InlineKeyboardButton(
+            text=PRODUCT_INFO_BUTTON_TEXT,
+            callback_data=product_info_callback.new(product_id)
+        )
+    )
+    return markup
 
 
 def categories_markup(categories: List[Categories]) -> InlineKeyboardMarkup:
@@ -47,7 +62,7 @@ def add_product_to_basket_markup(product_id: int, additional_products: List[Addi
         )
     markup.add(
         InlineKeyboardButton(
-            text='Добавить в корзину',
+            text=ADD_PRODUCT_TO_BASKET_BUTTON_TEXT,
             callback_data=add_product_to_basket_callback.new(product_id)
         )
     )
@@ -67,7 +82,7 @@ def chose_product_markup(product_id: int, current_product_index: int,
         )
     markup.add(
         InlineKeyboardButton(
-            text='Добавить в корзину',
+            text=ADD_PRODUCT_TO_BASKET_BUTTON_TEXT,
             callback_data=add_product_to_basket_callback.new(product_id)
         )
     )
@@ -106,7 +121,7 @@ def chose_product_markup(product_id: int, current_product_index: int,
 
 
 def _create_markup(sequence: List[Categories | Subcategories], callback: CallbackData) -> InlineKeyboardMarkup:
-    markup = InlineKeyboardMarkup(row_width=3)
+    markup = InlineKeyboardMarkup(row_width=2)
     for item in sequence:
         markup.insert(
             InlineKeyboardButton(

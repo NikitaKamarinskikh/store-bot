@@ -1,7 +1,7 @@
 from aiogram import types
 from main import dp
 from db_api import products as products_model
-from keyboards.inline.product_markups import add_product_to_basket_markup
+from keyboards.inline.product_markups import product_info_markup
 
 
 @dp.inline_handler()
@@ -12,7 +12,6 @@ async def query(query: types.InlineQuery):
     products = products_model.get_products_by_name_pattern(product_name)
     results = []
     for product in products:
-        additional_products = products_model.get_additional_products_by_product_id(product.pk)
         image = products_model.get_first_image(product.pk)
         results.append(
             types.InlineQueryResultArticle(
@@ -21,7 +20,7 @@ async def query(query: types.InlineQuery):
                 input_message_content=types.InputTextMessageContent(
                     message_text=f'{product.name} {product.description}',
                 ),
-                reply_markup=add_product_to_basket_markup(product.pk, additional_products)
+                reply_markup=product_info_markup(product.pk)
             ),
         )
         if image is not None:

@@ -5,6 +5,8 @@ from .store_info import dp
 from .search_products import dp
 from .bonuses  import dp
 from .get_back import dp
+from .product_info import dp
 from .certificates import dp
+
 
 __all__ = ['dp']
