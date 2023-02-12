@@ -14,15 +14,16 @@ async def query(query: types.InlineQuery):
     products = products_model.get_products_by_name_pattern(product_name)
     results = []
     for product in products:
+        print(f'{site_url}test.jpg')
         results.append(
             types.InlineQueryResultArticle(
                 id=product.pk,
                 title=product.name,
                 input_message_content=types.InputTextMessageContent(
-                    message_text=f'{product.name} {product.description}',
+                    message_text=f'{product.name}',
                 ),
                 reply_markup=product_info_markup(product.pk),
-                thumb_url=f'{site_url}{product.preview_url}'
+                # thumb_url=f'{site_url}{product.preview_url}'
             ),
         )
     await query.answer(
