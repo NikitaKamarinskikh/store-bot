@@ -60,7 +60,7 @@ def get_product_images_by_product_id(product_id: int) -> List[ProductImages]:
 def get_products_by_name_pattern(pattern: str) -> List[Products]:
     products = Products.objects.all()
     filtered_products = [product for product in products
-                            if pattern in product.name]
+                            if pattern.lower() in product.name.lower()]
     return filtered_products
 
 
