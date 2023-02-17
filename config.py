@@ -7,9 +7,12 @@ from enum import Enum
 env = Env()
 env.read_env()
 
+
 BOT_TOKEN = env.str('BOT_TOKEN')
 
 PRIVACY_POLICY_FILE_TELEGRAM_ID = env.str('PRIVACY_POLICY_FILE_TELEGRAM_ID')
+
+MEDIA_URL = env.str('MEDIA_URL')
 
 
 class ClientsCategories(str, Enum):

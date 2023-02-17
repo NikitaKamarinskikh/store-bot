@@ -14,25 +14,26 @@ from referral_program.referral_program import load_referral_program_settings_fro
 
 @dp.message_handler(CommandStart())
 async def start(message: types.Message, state: FSMContext):
-    client = clients.get_by_telegram_id_or_none(message.from_user.id)
-    if client is None:
-        await message.answer(
-            'Здравствуйте. Добро пожаловать. Здесь вы можете приобрести экипировку производства "Bear Gear"',
-            reply_markup=one_button_markup(RegistrationMessagesTexts.accept_welcome_message)
-        )
-        await ClientRegistrationStates.accept_welcome_message.set()
+    await message.answer_photo('http://bear-gear.ru/media/test.jpg')
+    # client = clients.get_by_telegram_id_or_none(message.from_user.id)
+    # if client is None:
+    #     await message.answer(
+    #         'Здравствуйте. Добро пожаловать. Здесь вы можете приобрести экипировку производства "Bear Gear"',
+    #         reply_markup=one_button_markup(RegistrationMessagesTexts.accept_welcome_message)
+    #     )
+    #     await ClientRegistrationStates.accept_welcome_message.set()
 
-        referrer_telegram_id = None
-        message_args = message.get_args()
-        if message_args.isdigit():  # Приведен пользователем
-            referrer_telegram_id = message_args
-        await state.update_data(referrer_telegram_id=referrer_telegram_id)
-    else:
-        basket_info = basket_model.get_info(message.from_user.id)
-        await message.answer(
-            'Вы уже зарегистрированы в боте',
-            reply_markup=create_main_markup(basket_info)
-        )
+    #     referrer_telegram_id = None
+    #     message_args = message.get_args()
+    #     if message_args.isdigit():  # Приведен пользователем
+    #         referrer_telegram_id = message_args
+    #     await state.update_data(referrer_telegram_id=referrer_telegram_id)
+    # else:
+    #     basket_info = basket_model.get_info(message.from_user.id)
+    #     await message.answer(
+    #         'Вы уже зарегистрированы в боте',
+    #         reply_markup=create_main_markup(basket_info)
+    #     )
 
 
 @dp.message_handler(text=RegistrationMessagesTexts.accept_welcome_message,

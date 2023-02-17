@@ -12,7 +12,7 @@ WEEK_IN_SECONDS = DAY_IN_SECONDS * 7
 COMPARATIVE_RANGE_IN_SECONDS = 30
 
 
-async def check_basket():
+async def check_basket() -> None:
     clients = clients_model.get_all()
     for client in clients:
         await _check_client_products(client)
@@ -22,6 +22,7 @@ async def _check_client_products(client: Clients) -> None:
     client_basket_products = basket.get_products_by_client_telegram_id(client.telegram_id)
     if not client_basket_products:
         return
+    print(client_basket_products)
     for product in client_basket_products:
         await _check_bsket_product(client, product)
 
