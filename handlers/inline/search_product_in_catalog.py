@@ -15,7 +15,8 @@ async def query(query: types.InlineQuery):
     for product in products:
         preview_url = None
         if product.preview_url is not None:
-            f'{MEDIA_URL}{product.preview_url}'
+            preview_url = f'{MEDIA_URL}{product.preview_url}'
+        print(preview_url)
         results.append(
             types.InlineQueryResultArticle(
                 id=product.pk,
