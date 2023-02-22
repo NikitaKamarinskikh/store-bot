@@ -134,7 +134,7 @@ async def _ask_transport_company(message: types.Message) -> None:
 
 
 async def _ask_delivery_address(message: types.Message) -> None:
-    await message.answer('Укажите адресс отправителя или центр выдачи')
+    await message.answer('Укажите адрес отправителя или центр выдачи')
     await MakeOrderStates.get_delivery_address.set()
 
 

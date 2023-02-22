@@ -22,7 +22,6 @@ async def _check_client_products(client: Clients) -> None:
     client_basket_products = basket.get_products_by_client_telegram_id(client.telegram_id)
     if not client_basket_products:
         return
-    print(client_basket_products)
     for product in client_basket_products:
         await _check_bsket_product(client, product)
 
@@ -36,7 +35,6 @@ async def _check_bsket_product(client: Clients, product: Products) -> None:
 
     elif _is_critical_timedelta(timedelta_in_seconds):
         basket.clear(client.telegram_id)
-
 
 
 def _is_notification_timedelta(timedelta: int) -> bool:
