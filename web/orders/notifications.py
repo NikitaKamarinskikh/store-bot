@@ -3,17 +3,17 @@ from config import env
 
 
 def notify_client_about_order_in_progress_status(client_telegram_id: int, order_id: int) -> None:
-    message_text = f'Ваш заказ {order_id} подтвержден, передан в работу.'
+    message_text = f'Ваш заказ №{order_id} подтвержден, передан в работу.'
     _send_message_by_telegram_bot_api(client_telegram_id, message_text)
 
 
 def notify_client_about_order_in_delivery_status(client_telegram_id: int, order_id: int) -> None:
-    message_text = f'Ваш заказ {order_id} готов, передан в доставку'
+    message_text = f'Ваш заказ №{order_id} готов, передан в доставку'
     _send_message_by_telegram_bot_api(client_telegram_id, message_text)
 
 
 def notify_client_about_order_in_sent_status(client_telegram_id: int, order_id: int, track_number: str) ->  None:
-    message_text = f'Ваш заказ {order_id} отправлен. Трек номер: {track_number}'
+    message_text = f'Ваш заказ №{order_id} отправлен. Трек номер: {track_number}'
     _send_message_by_telegram_bot_api(client_telegram_id, message_text)
 
 

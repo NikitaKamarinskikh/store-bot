@@ -17,7 +17,7 @@ class OrderProductsInline(admin.StackedInline):
 
 @admin.register(Orders)
 class OrdersAdmin(admin.ModelAdmin):
-    list_display = ('client', 'created_at',
+    list_display = ('id', 'client', 'created_at',
                     'desired_completion_date', 'last_completion_date', 'status')
     list_display_links  = ('client',)
     

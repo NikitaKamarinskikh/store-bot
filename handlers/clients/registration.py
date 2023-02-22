@@ -57,7 +57,6 @@ async def accept_privacy_policy(message: types.Message, state: FSMContext):
         MAIN_MENU_TEXT,
         reply_markup=create_main_markup()
     )
-
     await state.finish()
 
 
