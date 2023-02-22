@@ -1,7 +1,8 @@
+import os
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import CommandStart
-from main import dp
+from main import dp, bot
 from config import MEDIA_URL, PRIVACY_POLICY_FILE_TYPE
 from keyboards.default.one_button_markup import one_button_markup
 from keyboards.default.main_markup import create_main_markup
@@ -44,8 +45,9 @@ async def accept_welcome_message(message: types.Message):
     )
     privacy_policy = documents_model.get_document_by_type(PRIVACY_POLICY_FILE_TYPE)
     file_name = privacy_policy.file.name
-    file_url = f'{MEDIA_URL}{file_name}'
-    await message.answer_document(file_url)
+    file_path = os.path.join(os.path.abspath(os.getcwd()), f'web/media/{file_name}')
+    file = types.InputFile(file_path)
+    await message.answer_document(file)
     await ClientRegistrationStates.accept_privacy_policy.set()
 
 
