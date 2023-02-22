@@ -28,7 +28,7 @@ def get_products_by_category_and_subcategory(category_id: int, subcategory_id: i
 def get_products_by_category_or_category_and_subcategory(category_id: int, subcategory_id: int = None) -> List[Products]:
     filtered_products = []
     category = Categories.objects.get(pk=category_id)
-    subcategory = Subcategories.objects.get(pk=subcategory_id)
+    subcategory = Subcategories.objects.filter(pk=subcategory_id).first()
     products = Products.objects.filter(category=category)
     for product in products:
         if product.subcategory is not None:

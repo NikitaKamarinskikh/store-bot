@@ -47,9 +47,17 @@ async def get_back(message: types.Message, state: FSMContext):
     elif current_state == 'GetProductFromCatalogStates:get_subcategory':
         await _ask_category(message)
     elif current_state == 'GetProductFromCatalogStates:chose_product':
-        await _ask_subcategory(message, state)
+        subcategories = products_model.get_subcategories_by_category_id(category_id)
+        if len(subcategories) != 0:
+            await _ask_subcategory(message, state)
+        else:
+            await _ask_category(message)
     elif current_state == 'GetProductFromCatalogStates:get_product_quantity':
-        await _ask_subcategory(message, state)
+        subcategories = products_model.get_subcategories_by_category_id(category_id)
+        if len(subcategories) != 0:
+            await _ask_subcategory(message, state)
+        else:
+            await _ask_category(message)
 
 
 @dp.message_handler(text=OrdersMessagesText.catalog)
@@ -62,7 +70,13 @@ async def get_category(callback: types.CallbackQuery, callback_data: dict, state
     await callback.answer()
     category_id = callback_data.get('id')
     await state.update_data(category_id=category_id)
-    await _ask_subcategory(callback.message, state)
+    subcategories = products_model.get_subcategories_by_category_id(category_id)
+    if len(subcategories) != 0:
+        await _ask_subcategory(callback.message, state)
+    else:
+        await state.update_data(subcategory_id=None, current_product_index=0)
+        await _show_product(callback, state)
+        await GetProductFromCatalogStates.chose_product.set()
 
 
 @dp.callback_query_handler(subcategories_callback.filter(), state=GetProductFromCatalogStates.get_subcategory)
