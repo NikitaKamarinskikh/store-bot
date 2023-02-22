@@ -20,7 +20,7 @@ CATALOG_MESSAGE_TEXT="""
 class MainMenuMessagesTexts(NamedTuple):
     make_order = 'Заказ'
     search_product = 'Поиск'
-    bonuses = 'Кошелек'
+    bonuses = 'Потратить на заказ снаряжения'
     info = 'Общая информация'
 
 
