@@ -2,38 +2,37 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import CommandStart
 from main import dp
-from config import PRIVACY_POLICY_FILE_TELEGRAM_ID
+from config import MEDIA_URL, PRIVACY_POLICY_FILE_TYPE
 from keyboards.default.one_button_markup import one_button_markup
 from keyboards.default.main_markup import create_main_markup
 from states.clients.registration import ClientRegistrationStates
 from messages_texts import RegistrationMessagesTexts,MAIN_MENU_TEXT
-from db_api import clients, basket as basket_model
+from db_api import clients, basket as basket_model, documents as documents_model
 from notifications import client_notification
 from referral_program.referral_program import load_referral_program_settings_from_json_file
 
 
 @dp.message_handler(CommandStart())
 async def start(message: types.Message, state: FSMContext):
-    await message.answer_photo('http://bear-gear.ru/media/test.jpg')
-    # client = clients.get_by_telegram_id_or_none(message.from_user.id)
-    # if client is None:
-    #     await message.answer(
-    #         'Здравствуйте. Добро пожаловать. Здесь вы можете приобрести экипировку производства "Bear Gear"',
-    #         reply_markup=one_button_markup(RegistrationMessagesTexts.accept_welcome_message)
-    #     )
-    #     await ClientRegistrationStates.accept_welcome_message.set()
+    client = clients.get_by_telegram_id_or_none(message.from_user.id)
+    if client is None:
+        await message.answer(
+            'Здравствуйте. Добро пожаловать. Здесь вы можете приобрести экипировку производства "Bear Gear"',
+            reply_markup=one_button_markup(RegistrationMessagesTexts.accept_welcome_message)
+        )
+        await ClientRegistrationStates.accept_welcome_message.set()
 
-    #     referrer_telegram_id = None
-    #     message_args = message.get_args()
-    #     if message_args.isdigit():  # Приведен пользователем
-    #         referrer_telegram_id = message_args
-    #     await state.update_data(referrer_telegram_id=referrer_telegram_id)
-    # else:
-    #     basket_info = basket_model.get_info(message.from_user.id)
-    #     await message.answer(
-    #         'Вы уже зарегистрированы в боте',
-    #         reply_markup=create_main_markup(basket_info)
-    #     )
+        referrer_telegram_id = None
+        message_args = message.get_args()
+        if message_args.isdigit():  # Приведен пользователем
+            referrer_telegram_id = message_args
+        await state.update_data(referrer_telegram_id=referrer_telegram_id)
+    else:
+        basket_info = basket_model.get_info(message.from_user.id)
+        await message.answer(
+            'Вы уже зарегистрированы в боте',
+            reply_markup=create_main_markup(basket_info)
+        )
 
 
 @dp.message_handler(text=RegistrationMessagesTexts.accept_welcome_message,
@@ -43,7 +42,10 @@ async def accept_welcome_message(message: types.Message):
         'Чтобы сделать заказ нужно согласиться с правилами бота, в том числе касаемо ваших персональных данных.',
         reply_markup=one_button_markup(RegistrationMessagesTexts.accept_privacy_policy_message)
     )
-    await message.answer_document(PRIVACY_POLICY_FILE_TELEGRAM_ID)
+    privacy_policy = documents_model.get_document_by_type(PRIVACY_POLICY_FILE_TYPE)
+    file_name = privacy_policy.file.name
+    file_url = f'{MEDIA_URL}{file_name}'
+    await message.answer_document(file_url)
     await ClientRegistrationStates.accept_privacy_policy.set()
 
 

@@ -14,6 +14,7 @@ PRIVACY_POLICY_FILE_TELEGRAM_ID = env.str('PRIVACY_POLICY_FILE_TELEGRAM_ID')
 
 MEDIA_URL = env.str('MEDIA_URL')
 
+PRIVACY_POLICY_FILE_TYPE = 'privacy_policy'
 
 class ClientsCategories(str, Enum):
     ALL = 'Все'

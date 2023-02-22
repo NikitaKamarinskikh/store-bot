@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'web.referral_program',
     'web.store_info',
     'web.managers',
+    'web.documents',
 ]
 
 MIDDLEWARE = [
