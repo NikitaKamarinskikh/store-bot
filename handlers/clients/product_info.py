@@ -40,9 +40,9 @@ async def show_product_info(callback: types.CallbackQuery, callback_data: dict):
 
 
 def _get_product_info(product: Products) -> str:
-    info = f'<b>{product.name}</b> \n{product.description}\nСтоимость: <b>{product.price} руб.</b>'
+    info = f'<b>{product.name}</b> \n{product.description}'
     if product.sizes:
-        info += f'\nРазмеры: {product.sizes}'
+        info += f'\nРазмеры: {product.sizes}\nСтоимость: <b>{product.price} руб.</b>'
     return info
 
 
