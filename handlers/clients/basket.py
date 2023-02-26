@@ -53,7 +53,7 @@ async def get_basket_products(message: types.Message, state: FSMContext):
     if not basket_products:
         await message.answer('Корзина пуста')
         return
-    info = _format_basket_products(basket_products)
+    info = format_basket_products(basket_products)
     await message.answer(
         f'У вас в корзине:\n{info}',
         reply_markup=make_order_markup()
@@ -182,7 +182,7 @@ def _format_order_data(order_data: OrderData) -> str:
             f'Крайний срок готовности: {last_completion_date}'
 
 
-def _format_basket_products(basket_products: List[BasketProducts]) -> str:
+def format_basket_products(basket_products: List[BasketProducts]) -> str:
     products_info = ''
     product_number= 1
     for basket_product in basket_products:
@@ -206,7 +206,7 @@ async def confirm_order(callback: types.CallbackQuery, state: FSMContext):
 
     order = orders_model.create(order_data)
     basket_products = basket_model.get_products_by_client_telegram_id(callback.from_user.id)
-    order_info = f'Новый заказ\n{_format_basket_products(basket_products)}'
+    order_info = f'Новый заказ\n{format_basket_products(basket_products)}'
     await notify_managers_about_new_order(order_info)
     basket_model.clear(callback.from_user.id)
 

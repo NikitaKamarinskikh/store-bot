@@ -45,3 +45,6 @@ def get_info(client_telegram_id: int) -> BasketInfo:
         amount_in_rub=amount
     )
 
+
+def remove(product_id: int) -> None:
+    return BasketProducts.objects.filter(pk=product_id).delete()

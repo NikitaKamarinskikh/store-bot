@@ -1,5 +1,6 @@
 from .registration import dp
 from .basket import dp
+from .remove_product_from_basket import dp
 from .orders import dp
 from .store_info import dp
 from .search_products import dp
