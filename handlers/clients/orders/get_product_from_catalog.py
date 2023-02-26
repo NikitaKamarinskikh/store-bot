@@ -141,22 +141,50 @@ def _image_to_album(image: ProductImages) -> types.MediaGroup:
 async def add_additional_product(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     state_data = await state.get_data()
-    id = callback_data.get('id')
+    additional_product_id = callback_data.get('id')
     product_id = callback_data.get('product_id')
     additional_products_list = state_data.get('additional_products_list')
     if additional_products_list is None:
         additional_products_list = []
-    additional_products_list.append(
-        (int(product_id), int(id))
-    )
-    await state.update_data(additional_products_list=additional_products_list)
-    if callback.message is not None:
-        await callback.message.answer('Дополнительный товар успешно добавлен')
-    else: # Request from inline mode
-        await bot.send_message(
-            chat_id=callback.from_user.id,
-            text='Дополнительный товар успешно добавлен'
+    
+    if _is_additional_product_chosen(additional_products_list, int(additional_product_id)):
+        additional_products_list = _remove_additional_product(additional_products_list, int(additional_product_id))
+    else:
+        additional_products_list.append(
+            (int(product_id), int(additional_product_id))
         )
+
+    await state.update_data(additional_products_list=additional_products_list)
+
+    chosen_additional_products = [i[1] for i in additional_products_list]
+    additional_products = products_model.get_additional_products_by_product_id(product_id)
+
+    if callback.message is not None:
+        await callback.message.edit_reply_markup(
+            reply_markup=add_product_to_basket_markup(product_id, additional_products, chosen_additional_products)
+        )
+    else: # Request from inline mode
+        await bot.edit_message_reply_markup(
+            chat_id=callback.from_user.id,
+            message_id=callback.message.message_id,
+            reply_markup=add_product_to_basket_markup(product_id, additional_products, chosen_additional_products)
+        )
+
+
+def _remove_additional_product(additional_products, additional_product_id: int):
+    new_additional_products = []
+    for item in additional_products:
+        if item[1] != additional_product_id:
+            new_additional_products.append(item)
+    return new_additional_products
+
+
+def _is_additional_product_chosen(additional_products, additional_product_id: int) -> bool:
+    for item in additional_products:
+        if item[1] == additional_product_id:
+            return  True
+    return False
+
 
 
 @dp.callback_query_handler(product_markups.add_product_to_basket_callback.filter(), state='*')

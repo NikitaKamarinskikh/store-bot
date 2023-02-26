@@ -1,5 +1,6 @@
 from typing import List, Union
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 from web.products.models import Products, ProductImages
 from main import dp, bot
 from keyboards.inline.product_markups import product_info_callback, add_product_to_basket_markup
@@ -7,7 +8,7 @@ from db_api import products as products_model
 
 
 @dp.callback_query_handler(product_info_callback.filter(), state='*')
-async def show_product_info(callback: types.CallbackQuery, callback_data: dict):
+async def show_product_info(callback: types.CallbackQuery, callback_data: dict, state: FSMContext):
     await callback.answer()
     product_id = callback_data.get('product_id')
     product = products_model.get_product_by_id(product_id)
@@ -15,6 +16,13 @@ async def show_product_info(callback: types.CallbackQuery, callback_data: dict):
 
     additional_products = products_model.get_additional_products_by_product_id(product.pk)
     product_images = products_model.get_product_images_by_product_id(product.pk)
+
+    state_data = await state.get_data()
+
+    additional_products_list = state_data.get('additional_products_list')
+    chosen_additional_products = None
+    if additional_products_list is not None:
+        chosen_additional_products = [i[1] for i in additional_products_list]
 
     album = _get_photo_album(product_images)
     if album is not None:
@@ -30,12 +38,12 @@ async def show_product_info(callback: types.CallbackQuery, callback_data: dict):
         await bot.send_message(
             chat_id=callback.from_user.id,
             text=product_info,
-            reply_markup=add_product_to_basket_markup(product.pk, additional_products)
+            reply_markup=add_product_to_basket_markup(product.pk, additional_products, chosen_additional_products)
         )
     else:
         await callback.message.answer(
             product_info,
-            reply_markup=add_product_to_basket_markup(product.pk, additional_products)
+            reply_markup=add_product_to_basket_markup(product.pk, additional_products, chosen_additional_products)
         )
 
 
