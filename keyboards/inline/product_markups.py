@@ -53,13 +53,13 @@ def products_pair_markup(products: List[Products]) -> InlineKeyboardMarkup:
 
 def add_product_to_basket_markup(product_id: int, additional_products: List[AdditionalProducts],
             chosen_additional_products: List[int] | None) -> InlineKeyboardMarkup:
-    markup = InlineKeyboardMarkup(row_width=2)
+    markup = InlineKeyboardMarkup(row_width=1)
     for additional_product in additional_products:
         text = additional_product.name
         if chosen_additional_products is not None:
             if additional_product.pk in chosen_additional_products:
-                text += ' ✅'
-        markup.insert(
+                text = f'✅ {additional_product.name}'
+        markup.add(
             InlineKeyboardButton(
                 text=text,
                 callback_data=additional_product_callback.new(additional_product.pk, product_id)
