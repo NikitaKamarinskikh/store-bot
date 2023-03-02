@@ -56,4 +56,8 @@ def increment_orders_quantity(client_telegram_id: int) -> None:
     client.save()
 
 
+def get_coins_quantity(client_telegram_id: int) -> int:
+    return Clients.objects.get(telegram_id=client_telegram_id).coins
+
+
 

@@ -158,7 +158,8 @@ async def _collect_order_data(client_telegram_id: int, state: FSMContext) -> Ord
         transport_company_id=int(state_data.get('transport_company_id')),
         delivery_address=state_data.get('delivery_address'),
         desired_completion_date=state_data.get('desired_completion_date'),
-        last_completion_date=state_data.get('last_completion_date')
+        last_completion_date=state_data.get('last_completion_date'),
+        bonus_coins=state_data.get('bonus_coins')
     )
 
 
@@ -185,7 +186,7 @@ def _format_order_data(order_data: OrderData) -> str:
 
 def format_basket_products(basket_products: List[BasketProducts]) -> str:
     products_info = ''
-    product_number= 1
+    product_number = 1
     for basket_product in basket_products:
         products_info += f'{product_number} {basket_product.product.name} <i> {basket_product.product_quantity} шт. </i> {basket_product.product.price} руб.\n'
         additional_products = basket_product.additional_products
@@ -199,19 +200,52 @@ def format_basket_products(basket_products: List[BasketProducts]) -> str:
 @dp.callback_query_handler(confirm_order_callback.filter(), state=MakeOrderStates.confirm_order)
 async def confirm_order(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
-    current_basket_info = basket_model.get_info(callback.from_user.id)
-    order_data = await _collect_order_data(callback.from_user.id, state)
-    basket_products = basket_model.get_products_by_client_telegram_id(callback.from_user.id)
+    client_coins = clients_model.get_coins_quantity(callback.from_user.id)
+    if client_coins > 0:
+        await state.update_data(current_client_coins=client_coins)
+        await callback.message.answer(f'У вас {client_coins} монет на счету. Сколько списать в этом заказе?')
+        await MakeOrderStates.get_bonus_coins_quantity.set()
+    else:
+        await state.update_data(bonus_coins=0)
+        await _create_order(callback.message, callback.from_user.id, state)
+
+
+@dp.message_handler(state=MakeOrderStates.get_bonus_coins_quantity)
+async def get_bonus_coins_quantity(message: types.Message, state: FSMContext):
+    state_data = await state.get_data()
+    current_client_coins = state_data.get('current_client_coins')
+    bonus_coins = message.text
+    if _is_correct_coins_quantity(bonus_coins, current_client_coins):
+        await state.update_data(bonus_coins=int(bonus_coins))
+        await _create_order(message, message.from_user.id, state)
+    else:
+        await message.answer('Число монет указано некорректно')
+
+
+def _is_correct_coins_quantity(coins_quantity: str, current_coins_quantity: int) -> bool:
+    if match('^[0-9]*$', coins_quantity) is not None:
+        coins_quantity = int(coins_quantity)
+        return coins_quantity <= current_coins_quantity
+    return False
+
+
+async def _create_order(message: types.Message, user_telegram_id, state: FSMContext) -> None:
+    current_basket_info = basket_model.get_info(user_telegram_id)
+    order_data = await _collect_order_data(user_telegram_id, state)
+    basket_products = basket_model.get_products_by_client_telegram_id(user_telegram_id)
     order_data.products = basket_products
     order_data.amount = current_basket_info.amount_in_rub
 
     order = orders_model.create(order_data)
-    basket_products = basket_model.get_products_by_client_telegram_id(callback.from_user.id)
+    basket_products = basket_model.get_products_by_client_telegram_id(user_telegram_id)
     order_info = f'Новый заказ\n{format_basket_products(basket_products)}'
+    if order_data.bonus_coins:
+        order_info += f'Использовать бонусных монет: {order_data.bonus_coins}'
     await notify_managers_about_new_order(order_info)
-    basket_model.clear(callback.from_user.id)
-    clients_model.increment_orders_quantity(callback.from_user.id)
-    await callback.message.answer(
+    basket_model.clear(user_telegram_id)
+    clients_model.increment_orders_quantity(user_telegram_id)
+
+    await message.answer(
         f'Ваш заказ №{order.pk} оформлен, скоро с вами свяжутся.',
         reply_markup=create_main_markup()
     )

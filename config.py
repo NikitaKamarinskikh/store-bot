@@ -47,8 +47,9 @@ class OrderData:
     delivery_address: str
     desired_completion_date: str
     last_completion_date: str
-    products: list = field(default_factory=list) # BasketProducts
+    products: list = field(default_factory=list)  # BasketProducts
     amount: int = 0
+    bonus_coins: int = 0
 
 
 @dataclass

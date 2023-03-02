@@ -17,18 +17,19 @@ def create(order_data: OrderData) -> Orders:
         delivery_address=order_data.delivery_address,
         desired_completion_date=order_data.desired_completion_date,
         last_completion_date=order_data.last_completion_date,
-        amount=order_data.amount
+        amount=order_data.amount,
+        bonus_coins=order_data.bonus_coins
     )
 
     for basket_product in order_data.products:
         order_product = OrderProducts.objects.create(
             order=order,
-            product=basket_product.product
+            product=basket_product.product,
+            product_quantity=basket_product.product_quantity
         )
         for additional_basket_product in basket_product.additional_products.all():
             order_product.additional_products.add(additional_basket_product)
         order_product.save()
-
 
     return order
 

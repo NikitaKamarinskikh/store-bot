@@ -182,9 +182,8 @@ def _remove_additional_product(additional_products, additional_product_id: int):
 def _is_additional_product_chosen(additional_products, additional_product_id: int) -> bool:
     for item in additional_products:
         if item[1] == additional_product_id:
-            return  True
+            return True
     return False
-
 
 
 @dp.callback_query_handler(product_markups.add_product_to_basket_callback.filter(), state='*')

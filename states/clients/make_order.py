@@ -9,6 +9,7 @@ class MakeOrderStates(StatesGroup):
     get_desired_completion_date = State()
     get_last_completion_date = State()
     confirm_order = State()
+    get_bonus_coins_quantity = State()
 
 
 class ProductNotInCategoryStates(StatesGroup):

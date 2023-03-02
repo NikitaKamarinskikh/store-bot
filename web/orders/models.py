@@ -20,6 +20,7 @@ class Orders(models.Model):
     track_number = models.CharField(verbose_name='Трек номер', max_length=255, null=True, blank=True)
     status = models.CharField(verbose_name='Статус', max_length=100, choices=OrderStatuses.choices(), default=OrderStatuses.PENDING_PROCESSING.name)
     amount = models.PositiveIntegerField(verbose_name='Общая стоимость', default=0)
+    bonus_coins = models.PositiveIntegerField(verbose_name='Количество бонусов', default=0)
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -30,7 +31,6 @@ class Orders(models.Model):
         return f'{self.client}'
 
     def save(self, *args, **kwargs):
-
         if self.status != self._old_status:
             if self.status == OrderStatuses.IN_PROGRESS.name:
                 notify_client_about_order_in_progress_status(self.client.telegram_id, self.pk)
@@ -45,7 +45,6 @@ class Orders(models.Model):
             self._old_track_number = self.track_number
 
         super(Orders, self).save(*args, **kwargs)
-
 
     class Meta:
         ordering= ['-created_at']

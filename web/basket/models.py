@@ -10,7 +10,6 @@ class BasketProducts(models.Model):
     product_quantity = models.PositiveIntegerField(verbose_name='Количество товара')
     created_at = models.DateTimeField(verbose_name='Дата и время создания', auto_now_add=True)
 
-
     def __str__(self) -> str:
         return f'{self.client} | {self.product} | {self.product_quantity}'
 
