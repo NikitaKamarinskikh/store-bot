@@ -5,7 +5,8 @@ from aiogram.dispatcher import FSMContext
 from web.basket.models import BasketProducts
 from main import dp
 from messages_texts import OrdersMessagesText, GET_BACK_MESSAGE_TEXT, MAIN_MENU_TEXT
-from db_api import basket as basket_model, transport_companies as transport_companies_model, orders as orders_model
+from db_api import basket as basket_model, transport_companies as transport_companies_model, orders as orders_model,\
+    clients as clients_model
 from keyboards.inline.orders_markups import make_order_markup, make_order_callback, confirm_order_markup, confirm_order_callback, update_order_callback,\
     update_order_points_markup, update_order_point_callback
 from keyboards.inline.transport_companies import transport_companies_markup, transport_companies_callback
@@ -209,7 +210,7 @@ async def confirm_order(callback: types.CallbackQuery, state: FSMContext):
     order_info = f'Новый заказ\n{format_basket_products(basket_products)}'
     await notify_managers_about_new_order(order_info)
     basket_model.clear(callback.from_user.id)
-
+    clients_model.increment_orders_quantity(callback.from_user.id)
     await callback.message.answer(
         f'Ваш заказ №{order.pk} оформлен, скоро с вами свяжутся.',
         reply_markup=create_main_markup()

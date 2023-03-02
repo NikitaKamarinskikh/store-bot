@@ -16,7 +16,7 @@ async def show_bonuses(message: types.Message):
 У вас {client.coins} монет, вы можете их потратить на приобретение снаряжения.
 Приглашенных пользователей: {referrals_quantity}
 
-За приглашение нового пользователя вы получите {referral_program_settings.user_acquisition_reward} монет после его первой покупки, а так же сразу получит {referral_program_settings.referral_reward} монет на первую покупку.
+За приглашение нового пользователя вы получите {referral_program_settings.user_acquisition_reward} монет после его первой покупки, а так же, приглашённый, сразу получит {referral_program_settings.referral_reward} монет на первую покупку.
 Кроме того, со всех покупок приглашенного вы будете получать {referral_program_settings.referral_order_reward_in_percentages}% в виде монет на свой бонусный счет.
 Со своих покупок будете получать {referral_program_settings.make_order_reward_in_percentages}% на счет.
     """

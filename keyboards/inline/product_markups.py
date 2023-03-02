@@ -55,10 +55,10 @@ def add_product_to_basket_markup(product_id: int, additional_products: List[Addi
             chosen_additional_products: List[int] | None) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup(row_width=1)
     for additional_product in additional_products:
-        text = additional_product.name
+        text = f'{additional_product.name}, {additional_product.price}р.'
         if chosen_additional_products is not None:
             if additional_product.pk in chosen_additional_products:
-                text = f'✅ {additional_product.name}'
+                text = f'✅ {additional_product.name}, {additional_product.price}р.'
         markup.add(
             InlineKeyboardButton(
                 text=text,

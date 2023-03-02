@@ -7,6 +7,7 @@ class Clients(models.Model):
     referrer = models.ForeignKey('Clients', verbose_name='Реферрер',on_delete=models.SET_NULL, null=True, blank=True)
     coins = models.PositiveBigIntegerField(verbose_name='Монеты', default=0)
     orders_quantity = models.PositiveIntegerField('Количество заказов', default=0)
+    registration_date = models.DateTimeField(verbose_name='Дата регистрации', blank=True, null=True, auto_now_add=True)
 
     def __str__(self) -> str:
         return self.telegram_id

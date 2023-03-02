@@ -55,3 +55,5 @@ def increment_orders_quantity(client_telegram_id: int) -> None:
     client.orders_quantity = client.orders_quantity + 1
     client.save()
 
+
+
