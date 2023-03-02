@@ -1,3 +1,4 @@
+from web.clients.models import Clients
 from db_api import clients
 from referral_program.referral_program import load_referral_program_settings_from_json_file
 from .notifications import notify_client_about_first_order_of_his_referral, notify_client_about_new_order_of_his_referral
@@ -17,6 +18,16 @@ def check_client_referrer(client_telegram_id: int, order_amount: int) -> None:
                 bonus = (order_amount * percent) // 100
                 clients.add_coins(referrer, bonus)
                 notify_client_about_new_order_of_his_referral(referrer.telegram_id, bonus)
+
+
+def write_off_coins(client: Clients, coins_to_write_off: int) -> None:
+    current_coins = client.coins
+    current_coins -= coins_to_write_off
+    if current_coins >= 0:
+        client.coins = current_coins
+        client.save()
+
+
 
 
 

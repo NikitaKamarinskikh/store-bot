@@ -5,7 +5,7 @@ from web.transport_companies.models import TransportCompanies
 from config import OrderStatuses
 from .notifications import notify_client_about_order_in_progress_status, notify_client_about_order_in_delivery_status,\
     notify_client_about_order_in_sent_status
-from .services import check_client_referrer
+from .services import check_client_referrer, write_off_coins
 
 
 class Orders(models.Model):
@@ -35,6 +35,7 @@ class Orders(models.Model):
             if self.status == OrderStatuses.IN_PROGRESS.name:
                 notify_client_about_order_in_progress_status(self.client.telegram_id, self.pk)
                 check_client_referrer(self.client.telegram_id, self.amount)
+                write_off_coins(self.client, self.bonus_coins)
 
             elif self.status == OrderStatuses.IN_DELIVERY.name:
                 notify_client_about_order_in_delivery_status(self.client.telegram_id, self.pk)
