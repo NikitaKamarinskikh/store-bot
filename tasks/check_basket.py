@@ -1,5 +1,5 @@
 from web.clients.models import Clients
-from web.products.models import Products
+from web.basket.models import BasketProducts
 from datetime import datetime, timezone
 from notifications.client_notification import notify_client_about_product_in_basket
 from db_api import basket, clients as clients_model
@@ -22,17 +22,15 @@ async def _check_client_products(client: Clients) -> None:
     client_basket_products = basket.get_products_by_client_telegram_id(client.telegram_id)
     if not client_basket_products:
         return
-    for product in client_basket_products:
-        await _check_bsket_product(client, product)
+    # for product in client_basket_products:
+    await _check_basket_product(client, client_basket_products[0])
 
 
-async def _check_bsket_product(client: Clients, product: Products) -> None:
+async def _check_basket_product(client: Clients, product: BasketProducts) -> None:
     current_time = datetime.now(timezone.utc)
     timedelta_in_seconds = (current_time - product.created_at).seconds
     if _is_notification_timedelta(timedelta_in_seconds):
         await notify_client_about_product_in_basket(client.telegram_id)
-        return
-
     elif _is_critical_timedelta(timedelta_in_seconds):
         basket.clear(client.telegram_id)
 

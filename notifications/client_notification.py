@@ -1,7 +1,6 @@
 from .common import send_message
 
 
-
 async def notify_client_about_new_referral(client_telegram_id: int, bonus_coins_quantity: int) -> None:
     text = f'Ваш друг зарегистрировался по вашей ссылке. При первом заказе вам будет начислено {bonus_coins_quantity} монет. Спасибо за доверие.'
     await send_message(client_telegram_id, text)
