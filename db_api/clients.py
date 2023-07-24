@@ -38,7 +38,7 @@ def add_coins(client_telegram_id: int, coins_quantity: int) -> Clients:
     return client
 
 
-def get_all() -> List[Clients]:
+def get_all_clients() -> List[Clients]:
     return list(Clients.objects.all())
 
 

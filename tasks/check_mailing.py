@@ -33,7 +33,7 @@ async def _exec_mainling(mailing: MailingLists) -> None:
 
 
 async def _exec_mailing_for_all_clients(mailing: MailingLists) -> None:
-    clients = clients_model.get_all()
+    clients = clients_model.get_all_clients()
     await _send_mailing_data(clients, mailing)
 
 

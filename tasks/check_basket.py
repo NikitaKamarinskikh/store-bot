@@ -13,7 +13,7 @@ COMPARATIVE_RANGE_IN_SECONDS = 30
 
 
 async def check_basket() -> None:
-    clients = clients_model.get_all()
+    clients = clients_model.get_all_clients()
     for client in clients:
         await _check_client_products(client)
 
@@ -22,7 +22,6 @@ async def _check_client_products(client: Clients) -> None:
     client_basket_products = basket.get_products_by_client_telegram_id(client.telegram_id)
     if not client_basket_products:
         return
-    # for product in client_basket_products:
     await _check_basket_product(client, client_basket_products[0])
 
 

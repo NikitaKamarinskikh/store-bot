@@ -1,4 +1,5 @@
 from aiogram import types
+
 from main import dp
 from db_api import products as products_model
 from keyboards.inline.product_markups import product_info_markup
@@ -16,7 +17,6 @@ async def query(query: types.InlineQuery):
         preview_url = None
         if product.preview_url is not None:
             preview_url = f'{MEDIA_URL}{product.preview_url}'
-        print(preview_url)
         results.append(
             types.InlineQueryResultArticle(
                 id=product.pk,

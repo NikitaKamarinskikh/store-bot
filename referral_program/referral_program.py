@@ -3,6 +3,7 @@ import json
 
 from .config import REFERRAL_PROGRAM_SETTINGS_FILE_NAME, ReferralProgramSettings
 
+
 def load_referral_program_settings_from_json_file() -> ReferralProgramSettings:
     if not os.path.exists(REFERRAL_PROGRAM_SETTINGS_FILE_NAME):
         return ReferralProgramSettings()

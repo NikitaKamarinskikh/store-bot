@@ -1,5 +1,6 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+
 from main import dp
 from states.clients.certificates import CertificatesStates
 from messages_texts import ReferralProgramMessagesTexts
@@ -14,8 +15,7 @@ async def certificate(message: types.Message):
 
 @dp.message_handler(state=CertificatesStates.get_certificate_hash)
 async def get_certificate_hash(message: types.Message, state: FSMContext):
-    hash = message.text
-    certificate = certificates.get_by_hash_or_none(hash)
+    certificate = certificates.get_by_hash_or_none(message.text)
     if certificate is not None:
         certificates.make_activated(message.from_user.id, certificate.pk)
         clients.add_coins(message.from_user.id, certificate.amount)

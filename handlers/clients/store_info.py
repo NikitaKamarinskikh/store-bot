@@ -1,4 +1,5 @@
 from aiogram import types
+
 from main import dp
 from messages_texts import MainMenuMessagesTexts
 from exceptions.exceptions import InfoDoesNotExists

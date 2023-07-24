@@ -1,3 +1,5 @@
+import logging
+
 from main import bot
 
 
@@ -7,8 +9,8 @@ async def send_message(chat_id: int, text: str) -> None:
             chat_id=chat_id,
             text=text
         )
-    except:
-        ...
+    except Exception as e:
+        logging.exception(e)
 
 
 

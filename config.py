@@ -16,6 +16,7 @@ MEDIA_URL = env.str('MEDIA_URL')
 
 PRIVACY_POLICY_FILE_TYPE = 'privacy_policy'
 
+
 class ClientsCategories(str, Enum):
     ALL = 'Все'
     HAS_ORDERS = 'Всем кто делал заказы'

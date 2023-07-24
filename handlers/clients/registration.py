@@ -1,7 +1,9 @@
 import os
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import CommandStart
+
 from main import dp, bot
 from config import MEDIA_URL, PRIVACY_POLICY_FILE_TYPE
 from keyboards.default.one_button_markup import one_button_markup
@@ -75,7 +77,9 @@ async def _register_client(message: types.Message, state: FSMContext) -> None:
         client_data['referrer_telegram_id'] =  referrer_telegram_id
         referral_program_settings = load_referral_program_settings_from_json_file()
         if referral_program_settings.user_acquisition_reward_satus:
-            client_notification.notify_client_about_new_referral(message.from_user.id, referral_program_settings.user_acquisition_reward)
+            await client_notification.notify_client_about_new_referral(
+                message.from_user.id, referral_program_settings.user_acquisition_reward
+            )
 
         client_data['bonus_coins_quantity'] = referral_program_settings.referral_reward
 

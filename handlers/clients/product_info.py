@@ -1,6 +1,8 @@
 from typing import List, Union
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+
 from web.products.models import Products, ProductImages
 from main import dp, bot
 from keyboards.inline.product_markups import product_info_callback, add_product_to_basket_markup

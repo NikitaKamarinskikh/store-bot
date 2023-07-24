@@ -1,4 +1,5 @@
 from aiogram import types
+
 from main import dp
 from messages_texts import MainMenuMessagesTexts
 from keyboards.inline.inline_mode_markup import switch_inline_query_current_chat_markup

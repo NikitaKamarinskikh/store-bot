@@ -15,7 +15,7 @@ async def notify_managers_about_product_not_in_catalog(text: str) -> None:
 
 
 async def _send_message_to_managers(text: str) -> None:
-    managers = managers_model.get_all()
+    managers = managers_model.get_all_managers()
     for manager in managers:
         await send_message(manager.telegram_id, text)
 

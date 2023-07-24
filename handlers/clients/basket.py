@@ -1,10 +1,12 @@
 from typing import List
 from re import match
-from aiogram import types, filters
+
+from aiogram import types
 from aiogram.dispatcher import FSMContext
+
 from web.basket.models import BasketProducts
 from main import dp
-from messages_texts import OrdersMessagesText, GET_BACK_MESSAGE_TEXT, MAIN_MENU_TEXT
+from messages_texts import GET_BACK_MESSAGE_TEXT, MAIN_MENU_TEXT
 from db_api import basket as basket_model, transport_companies as transport_companies_model, orders as orders_model,\
     clients as clients_model
 from keyboards.inline.orders_markups import make_order_markup, make_order_callback, confirm_order_markup, confirm_order_callback, update_order_callback,\
@@ -112,91 +114,6 @@ async def get_last_completion_date(message: types.Message, state: FSMContext):
     await MakeOrderStates.confirm_order.set()
 
 
-async def _ask_recipient_full_name(message: types.Message) -> None:
-    await message.answer(
-        'Введите ФИО на кого оформлять заказ при отправке',
-        reply_markup=get_back_markup
-    )
-    await MakeOrderStates.get_recipient_full_name.set()
-
-
-async def _ask_recipient_phone_number(message: types.Message) -> None:
-    await message.answer('Укажите телефон получателя')
-    await MakeOrderStates.get_recipient_phone_number.set()
-
-
-async def _ask_transport_company(message: types.Message) -> None:
-    transport_companies = transport_companies_model.get_all()
-    await message.answer(
-        'Выберите транспортную компанию',
-        reply_markup=transport_companies_markup(transport_companies)
-    )
-    await MakeOrderStates.get_transport_company.set()
-
-
-async def _ask_delivery_address(message: types.Message) -> None:
-    await message.answer('Укажите адрес отправителя или центр выдачи')
-    await MakeOrderStates.get_delivery_address.set()
-
-
-async def _ask_desired_completion_date(message: types.Message) -> None:
-    await message.answer('Введите дату, желаемой готовности заказа')
-    await MakeOrderStates.get_desired_completion_date.set()
-
-
-async def _ask_last_completion_date(message: types.Message) -> None:
-    await message.answer('Введите дату, последнего срока готовности товара')
-    await MakeOrderStates.get_last_completion_date.set()
-
-
-async def _collect_order_data(client_telegram_id: int, state: FSMContext) -> OrderData:
-    state_data = await state.get_data()
-    return OrderData(
-        client_telegram_id=client_telegram_id,
-        recipient_full_name=state_data.get('recipient_full_name'),
-        recipient_phone_number=state_data.get('recipient_phone_number'),
-        transport_company_id=int(state_data.get('transport_company_id')),
-        delivery_address=state_data.get('delivery_address'),
-        desired_completion_date=state_data.get('desired_completion_date'),
-        last_completion_date=state_data.get('last_completion_date'),
-        bonus_coins=state_data.get('bonus_coins')
-    )
-
-
-async def _show_order_data(message: types.Message, order_data: OrderData) -> None:
-    order_data_text = _format_order_data(order_data)
-    await message.answer(
-        order_data_text,
-        reply_markup=confirm_order_markup()
-    )
-
-
-def _format_order_data(order_data: OrderData) -> str:
-    client_full_name = order_data.recipient_full_name
-    recipient_phone_number = order_data.recipient_phone_number
-    transport_company_id = order_data.transport_company_id
-    transport_company = transport_companies_model.get_by_id(transport_company_id)
-    delivery_address = order_data.delivery_address
-    desired_completion_date = order_data.desired_completion_date
-    last_completion_date = order_data.last_completion_date
-    return f'ФИО: {client_full_name}\nТел.: {recipient_phone_number}\nТранспортная компания: {transport_company}\n'+\
-            f'Адрес отправления или центра выдачи: {delivery_address}\nЖелаемая дата готовности: {desired_completion_date}\n'+\
-            f'Крайний срок готовности: {last_completion_date}'
-
-
-def format_basket_products(basket_products: List[BasketProducts]) -> str:
-    products_info = ''
-    product_number = 1
-    for basket_product in basket_products:
-        products_info += f'{product_number} {basket_product.product.name} <i> {basket_product.product_quantity} шт. </i> {basket_product.product.price} руб.\n'
-        additional_products = basket_product.additional_products
-        for additional_product in additional_products.all():
-            products_info += f'+ {additional_product.name} {additional_product.price} руб.\n'
-        product_number += 1
-        products_info += '\n'
-    return products_info
-
-
 @dp.callback_query_handler(confirm_order_callback.filter(), state=MakeOrderStates.confirm_order)
 async def confirm_order(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
@@ -222,36 +139,6 @@ async def get_bonus_coins_quantity(message: types.Message, state: FSMContext):
         await message.answer('Число монет указано некорректно')
 
 
-def _is_correct_coins_quantity(coins_quantity: str, current_coins_quantity: int) -> bool:
-    if match('^[0-9]*$', coins_quantity) is not None:
-        coins_quantity = int(coins_quantity)
-        return coins_quantity <= current_coins_quantity
-    return False
-
-
-async def _create_order(message: types.Message, user_telegram_id, state: FSMContext) -> None:
-    current_basket_info = basket_model.get_info(user_telegram_id)
-    order_data = await _collect_order_data(user_telegram_id, state)
-    basket_products = basket_model.get_products_by_client_telegram_id(user_telegram_id)
-    order_data.products = basket_products
-    order_data.amount = current_basket_info.amount_in_rub
-
-    order = orders_model.create(order_data)
-    basket_products = basket_model.get_products_by_client_telegram_id(user_telegram_id)
-    order_info = f'Новый заказ\n{format_basket_products(basket_products)}'
-    if order_data.bonus_coins:
-        order_info += f'Использовать бонусных монет: {order_data.bonus_coins}'
-    await notify_managers_about_new_order(order_info)
-    basket_model.clear(user_telegram_id)
-    clients_model.increment_orders_quantity(user_telegram_id)
-
-    await message.answer(
-        f'Ваш заказ №{order.pk} оформлен, скоро с вами свяжутся.',
-        reply_markup=create_main_markup()
-    )
-    await state.finish()
-
-
 @dp.callback_query_handler(update_order_callback.filter(), state=MakeOrderStates.confirm_order)
 async def update_order(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
@@ -273,7 +160,7 @@ async def get_order_point(callback: types.CallbackQuery, callback_data: dict, st
         await UpdateOrderStates.update_receiver_phone_number.set()
         await callback.message.answer('Введите новые данные')
     elif order_point == 'transport_company':
-        transport_companies = transport_companies_model.get_all()
+        transport_companies = transport_companies_model.get_all_transport_companies()
         await callback.message.answer(
             'Выберите транспортную компанию',
             reply_markup=transport_companies_markup(transport_companies)
@@ -326,12 +213,126 @@ async def update_desired_completion_date(message: types.Message, state: FSMConte
     await _reask(message, state)
 
 
-
 @dp.message_handler(state=UpdateOrderStates.update_last_completion_date)
 async def update_last_completion_date(message: types.Message, state: FSMContext):
     last_completion_date = message.text
     await state.update_data(last_completion_date=last_completion_date)
     await _reask(message, state)
+
+
+def _is_correct_coins_quantity(coins_quantity: str, current_coins_quantity: int) -> bool:
+    if match('^[0-9]*$', coins_quantity) is not None:
+        coins_quantity = int(coins_quantity)
+        return coins_quantity <= current_coins_quantity
+    return False
+
+
+async def _ask_recipient_full_name(message: types.Message) -> None:
+    await message.answer(
+        'Введите ФИО на кого оформлять заказ при отправке',
+        reply_markup=get_back_markup
+    )
+    await MakeOrderStates.get_recipient_full_name.set()
+
+
+async def _ask_recipient_phone_number(message: types.Message) -> None:
+    await message.answer('Укажите телефон получателя')
+    await MakeOrderStates.get_recipient_phone_number.set()
+
+
+async def _ask_transport_company(message: types.Message) -> None:
+    transport_companies = transport_companies_model.get_all_transport_companies()
+    await message.answer(
+        'Выберите транспортную компанию',
+        reply_markup=transport_companies_markup(transport_companies)
+    )
+    await MakeOrderStates.get_transport_company.set()
+
+
+async def _ask_delivery_address(message: types.Message) -> None:
+    await message.answer('Укажите адрес отправителя или центр выдачи')
+    await MakeOrderStates.get_delivery_address.set()
+
+
+async def _ask_desired_completion_date(message: types.Message) -> None:
+    await message.answer('Введите дату, желаемой готовности заказа')
+    await MakeOrderStates.get_desired_completion_date.set()
+
+
+async def _ask_last_completion_date(message: types.Message) -> None:
+    await message.answer('Введите дату, последнего срока готовности товара')
+    await MakeOrderStates.get_last_completion_date.set()
+
+
+async def _collect_order_data(client_telegram_id: int, state: FSMContext) -> OrderData:
+    state_data = await state.get_data()
+    return OrderData(
+        client_telegram_id=client_telegram_id,
+        recipient_full_name=state_data.get('recipient_full_name'),
+        recipient_phone_number=state_data.get('recipient_phone_number'),
+        transport_company_id=int(state_data.get('transport_company_id')),
+        delivery_address=state_data.get('delivery_address'),
+        desired_completion_date=state_data.get('desired_completion_date'),
+        last_completion_date=state_data.get('last_completion_date'),
+        bonus_coins=state_data.get('bonus_coins')
+    )
+
+
+async def _show_order_data(message: types.Message, order_data: OrderData) -> None:
+    order_data_text = _format_order_data(order_data)
+    await message.answer(
+        order_data_text,
+        reply_markup=confirm_order_markup()
+    )
+
+
+def _format_order_data(order_data: OrderData) -> str:
+    client_full_name = order_data.recipient_full_name
+    recipient_phone_number = order_data.recipient_phone_number
+    transport_company_id = order_data.transport_company_id
+    transport_company = transport_companies_model.get_transport_company_by_id(transport_company_id)
+    delivery_address = order_data.delivery_address
+    desired_completion_date = order_data.desired_completion_date
+    last_completion_date = order_data.last_completion_date
+    return f'ФИО: {client_full_name}\nТел.: {recipient_phone_number}\nТранспортная компания: {transport_company}\n'+\
+            f'Адрес отправления или центра выдачи: {delivery_address}\nЖелаемая дата готовности: {desired_completion_date}\n'+\
+            f'Крайний срок готовности: {last_completion_date}'
+
+
+def format_basket_products(basket_products: List[BasketProducts]) -> str:
+    products_info = ''
+    product_number = 1
+    for basket_product in basket_products:
+        products_info += f'{product_number} {basket_product.product.name} <i> {basket_product.product_quantity} шт. </i> {basket_product.product.price} руб.\n'
+        additional_products = basket_product.additional_products
+        for additional_product in additional_products.all():
+            products_info += f'+ {additional_product.name} {additional_product.price} руб.\n'
+        product_number += 1
+        products_info += '\n'
+    return products_info
+
+
+async def _create_order(message: types.Message, user_telegram_id, state: FSMContext) -> None:
+    current_basket_info = basket_model.get_info(user_telegram_id)
+    order_data = await _collect_order_data(user_telegram_id, state)
+    basket_products = basket_model.get_products_by_client_telegram_id(user_telegram_id)
+    order_data.products = basket_products
+    order_data.amount = current_basket_info.amount_in_rub
+
+    order = orders_model.create(order_data)
+    basket_products = basket_model.get_products_by_client_telegram_id(user_telegram_id)
+    order_info = f'Новый заказ\n{format_basket_products(basket_products)}'
+    if order_data.bonus_coins:
+        order_info += f'Использовать бонусных монет: {order_data.bonus_coins}'
+    await notify_managers_about_new_order(order_info)
+    basket_model.clear(user_telegram_id)
+    clients_model.increment_orders_quantity(user_telegram_id)
+
+    await message.answer(
+        f'Ваш заказ №{order.pk} оформлен, скоро с вами свяжутся.',
+        reply_markup=create_main_markup()
+    )
+    await state.finish()
 
 
 async def _reask(message: types.Message, state: FSMContext) -> None:

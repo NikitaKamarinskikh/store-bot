@@ -17,6 +17,7 @@ CATALOG_MESSAGE_TEXT="""
 5. Посмотреть корзину
 """
 
+
 class MainMenuMessagesTexts(NamedTuple):
     make_order = 'Заказ'
     search_product = 'Поиск'
